@@ -1,6 +1,8 @@
 <template>
   <div class="chart-wrap">
-    <Line :data="chartData" :options="chartOptions" />
+    <div class="chart-canvas">
+      <Line :data="chartData" :options="chartOptions" />
+    </div>
   </div>
 </template>
 
@@ -67,5 +69,17 @@ const chartOptions = computed(() => ({
   border-radius: 10px;
   padding: 14px;
   height: 220px;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.chart-canvas {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+}
+.chart-canvas > :deep(canvas) {
+  max-width: 100%;
 }
 </style>

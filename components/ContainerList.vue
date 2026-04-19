@@ -1,6 +1,6 @@
 <template>
   <div class="list">
-    <div class="list-header">
+    <div class="list-header" aria-hidden="true">
       <div class="th name">Container</div>
       <div class="th">State</div>
       <div class="th num">CPU</div>
@@ -24,10 +24,10 @@
         </div>
       </div>
       <div class="state">{{ c.status }}</div>
-      <div class="num">{{ c.stat ? pct(c.stat.cpu) : '—' }}</div>
-      <div class="num">{{ c.stat ? humanBytes(c.stat.mem_used) : '—' }}</div>
-      <div class="num">{{ c.stat ? humanBytes(c.stat.net_rx) : '—' }}</div>
-      <div class="num">{{ c.stat ? humanBytes(c.stat.net_tx) : '—' }}</div>
+      <div class="metric num" data-label="CPU">{{ c.stat ? pct(c.stat.cpu) : '—' }}</div>
+      <div class="metric num" data-label="Mem">{{ c.stat ? humanBytes(c.stat.mem_used) : '—' }}</div>
+      <div class="metric num" data-label="↓">{{ c.stat ? humanBytes(c.stat.net_rx) : '—' }}</div>
+      <div class="metric num" data-label="↑">{{ c.stat ? humanBytes(c.stat.net_tx) : '—' }}</div>
       <div class="actions" @click.stop>
         <button v-if="c.state !== 'running'" @click="act(c, 'start')" title="Start">▶</button>
         <button v-if="c.state === 'running'" @click="act(c, 'restart')" title="Restart">⟳</button>
@@ -86,8 +86,82 @@ function act(c: ContainerRow, action: 'start' | 'stop' | 'restart') {
 .actions { display: flex; gap: 4px; justify-content: flex-end; }
 .actions button {
   background: #1a1f29; color: #c7ccd6; border: 1px solid #222832;
-  border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: 13px;
+  border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 13px;
+  min-width: 36px; min-height: 32px;
 }
 .actions button:hover { background: #222832; color: #e7eaf0; }
 .actions button.danger:hover { background: #7f1d1d; border-color: #ef4444; }
+
+@media (max-width: 720px) {
+  .list { background: transparent; border: none; display: grid; gap: 10px; overflow: visible; }
+  .list-header { display: none; }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "name    state"
+      "m1      m2"
+      "m3      m4"
+      "actions actions";
+    row-gap: 10px;
+    column-gap: 12px;
+    padding: 14px;
+    background: #11151c;
+    border: 1px solid #222832;
+    border-radius: 10px;
+  }
+  .row.active { background: #1a2332; border-color: #2a3447; }
+  .row:hover { background: #11151c; }
+  .row.active:hover { background: #1a2332; }
+  .name { grid-area: name; min-width: 0; }
+  .primary { font-size: 15px; white-space: normal; word-break: break-word; }
+  .secondary { font-size: 12px; white-space: normal; word-break: break-all; }
+  .state {
+    grid-area: state;
+    justify-self: end;
+    align-self: start;
+    text-align: right;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #1a1f29;
+    border: 1px solid #222832;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 60%;
+  }
+  .metric {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    gap: 2px;
+    font-size: 14px;
+  }
+  .metric::before {
+    content: attr(data-label);
+    color: #5b6578;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .row > .metric:nth-of-type(1) { grid-area: m1; }
+  .row > .metric:nth-of-type(2) { grid-area: m2; }
+  .row > .metric:nth-of-type(3) { grid-area: m3; }
+  .row > .metric:nth-of-type(4) { grid-area: m4; }
+  .actions {
+    grid-area: actions;
+    justify-content: stretch;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid #1a1f29;
+  }
+  .actions button {
+    flex: 1;
+    padding: 10px 12px;
+    font-size: 14px;
+    min-height: 40px;
+  }
+}
 </style>

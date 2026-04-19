@@ -4,6 +4,7 @@ node_modules
 .nitro
 .cache
 .vercel
+.claude
 .env
 .env.local
 dist

@@ -9,8 +9,29 @@
           uptime {{ humanDuration(snapshot?.host?.uptime_seconds || 0) }}
         </div>
       </div>
-      <div class="last-update" :class="{ stale: staleness > 5 }">
-        last update {{ staleness.toFixed(0) }}s ago
+      <div class="controls">
+        <button
+          class="pause-btn"
+          :class="{ paused }"
+          @click="togglePause"
+          :title="paused ? 'Resume polling' : 'Pause polling'"
+        >
+          {{ paused ? '▶ Resume' : '❙❙ Pause' }}
+        </button>
+        <label class="interval">
+          <span>every</span>
+          <select v-model.number="intervalMs" :disabled="paused">
+            <option :value="1000">1s</option>
+            <option :value="2000">2s</option>
+            <option :value="5000">5s</option>
+            <option :value="10000">10s</option>
+            <option :value="30000">30s</option>
+          </select>
+        </label>
+        <div class="last-update" :class="{ stale: !paused && staleness > 5 }">
+          <template v-if="paused">paused</template>
+          <template v-else>last update {{ Math.max(staleness, 0).toFixed(0) }}s ago</template>
+        </div>
       </div>
     </header>
 
@@ -90,19 +111,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import type { HistoryPoint, Snapshot } from '~/composables/useApi'
 import { humanBps, humanBytes, humanDuration, pct } from '~/utils/format'
 
 const config = useRuntimeConfig()
-const pollMs = config.public.pollInterval
+const defaultPollMs = config.public.pollInterval
 
+const STORAGE_KEY = 'monitoring:pollPrefs'
 const snapshot = ref<Snapshot | null>(null)
 const history = ref<HistoryPoint[]>([])
 const lastUpdated = ref<number>(0)
 const now = ref<number>(Date.now())
 const selectedId = ref<string | null>(null)
 const toast = ref<{ text: string; type: 'ok' | 'err' } | null>(null)
+const intervalMs = ref<number>(defaultPollMs)
+const paused = ref<boolean>(false)
 
 const staleness = computed(() => (now.value - lastUpdated.value) / 1000)
 const selectedName = computed(
@@ -173,20 +197,63 @@ function showToast(text: string, type: 'ok' | 'err') {
   }, 3000)
 }
 
-let snapTimer: any, histTimer: any, nowTimer: any
+let snapTimer: any = null
+let histTimer: any = null
+let nowTimer: any = null
 
-onMounted(() => {
+function startPolling() {
+  stopPolling()
+  if (paused.value) return
   pollSnapshot()
   pollHistory()
-  snapTimer = setInterval(pollSnapshot, pollMs)
-  histTimer = setInterval(pollHistory, 10000)
+  snapTimer = setInterval(pollSnapshot, intervalMs.value)
+  histTimer = setInterval(pollHistory, Math.max(intervalMs.value * 5, 10000))
+}
+
+function stopPolling() {
+  if (snapTimer) { clearInterval(snapTimer); snapTimer = null }
+  if (histTimer) { clearInterval(histTimer); histTimer = null }
+}
+
+function togglePause() {
+  paused.value = !paused.value
+}
+
+function loadPrefs() {
+  if (typeof localStorage === 'undefined') return
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return
+    const p = JSON.parse(raw)
+    if (typeof p.intervalMs === 'number' && p.intervalMs >= 500) intervalMs.value = p.intervalMs
+    if (typeof p.paused === 'boolean') paused.value = p.paused
+  } catch {}
+}
+
+function savePrefs() {
+  if (typeof localStorage === 'undefined') return
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ intervalMs: intervalMs.value, paused: paused.value }),
+    )
+  } catch {}
+}
+
+watch([intervalMs, paused], () => {
+  savePrefs()
+  startPolling()
+})
+
+onMounted(() => {
+  loadPrefs()
+  startPolling()
   nowTimer = setInterval(() => (now.value = Date.now()), 1000)
 })
 
 onUnmounted(() => {
-  clearInterval(snapTimer)
-  clearInterval(histTimer)
-  clearInterval(nowTimer)
+  stopPolling()
+  if (nowTimer) clearInterval(nowTimer)
 })
 </script>
 
@@ -209,6 +276,48 @@ onUnmounted(() => {
 .last-update { color: #5b6578; font-size: 12px; font-variant-numeric: tabular-nums; }
 .last-update.stale { color: #ef4444; }
 
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.pause-btn {
+  background: #1a1f29;
+  color: #c7ccd6;
+  border: 1px solid #222832;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  min-height: 32px;
+}
+.pause-btn:hover { background: #222832; color: #e7eaf0; }
+.pause-btn.paused { background: #064e3b; border-color: #10b981; color: #d1fae5; }
+.interval {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #7a869a;
+}
+.interval select {
+  background: #1a1f29;
+  color: #c7ccd6;
+  border: 1px solid #222832;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  min-height: 32px;
+}
+.interval select:disabled { opacity: 0.5; cursor: not-allowed; }
+@media (max-width: 640px) {
+  .top { flex-direction: column; align-items: stretch; gap: 12px; }
+  .controls { justify-content: flex-start; }
+}
+
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -219,6 +328,7 @@ onUnmounted(() => {
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
+.charts > * { min-width: 0; }
 @media (max-width: 900px) {
   .charts { grid-template-columns: 1fr; }
 }
