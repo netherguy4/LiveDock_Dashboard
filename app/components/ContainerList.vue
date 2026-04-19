@@ -1,51 +1,47 @@
 <template>
   <div class="list-wrap">
-    <ClientOnly>
-      <button
-        type="button"
-        class="filters-toggle"
-        :class="{ open: filtersOpen }"
-        :aria-expanded="filtersOpen"
-        @click="filtersOpen = !filtersOpen"
-      >
-        <span>Filters & sort</span>
-        <span class="filter-summary">{{ filterSummary }}</span>
-        <svg viewBox="0 0 12 8" width="12" height="8" class="chev" aria-hidden="true">
-          <path d="M1 1 L6 6 L11 1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </button>
-    </ClientOnly>
-    <ClientOnly>
-      <Collapse :when="filtersOpen" class="filters-collapse">
-        <div class="filters">
-          <label class="field">
-            <span>Search</span>
-            <input v-model="searchQuery" type="search" placeholder="name or image" @input="savePrefs" />
-          </label>
-          <label class="field">
-            <span>State</span>
-            <select v-model="stateFilter" @change="savePrefs">
-              <option value="all">All</option>
-              <option value="running">Running</option>
-              <option value="stopped">Stopped</option>
-            </select>
-          </label>
-          <label class="field">
-            <span>Sort by</span>
-            <select v-model="sortKey" @change="savePrefs">
-              <option v-for="col in columns" :key="col.key" :value="col.key">{{ col.label }}</option>
-            </select>
-          </label>
-          <label class="field">
-            <span>Direction</span>
-            <select v-model="sortDir" @change="savePrefs">
-              <option value="asc">Ascending</option>
-              <option value="desc">Descending</option>
-            </select>
-          </label>
-        </div>
-      </Collapse>
-    </ClientOnly>
+    <button
+      type="button"
+      class="filters-toggle"
+      :class="{ open: filtersOpen }"
+      :aria-expanded="filtersOpen"
+      @click="filtersOpen = !filtersOpen"
+    >
+      <span>Filters & sort</span>
+      <span class="filter-summary">{{ filterSummary }}</span>
+      <svg viewBox="0 0 12 8" width="12" height="8" class="chev" aria-hidden="true">
+        <path d="M1 1 L6 6 L11 1" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+    <Collapse :when="filtersOpen" class="filters-collapse">
+      <div class="filters">
+        <label class="field">
+          <span>Search</span>
+          <input v-model="searchQuery" type="search" placeholder="name or image" @input="savePrefs" />
+        </label>
+        <label class="field">
+          <span>State</span>
+          <select v-model="stateFilter" @change="savePrefs">
+            <option value="all">All</option>
+            <option value="running">Running</option>
+            <option value="stopped">Stopped</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Sort by</span>
+          <select v-model="sortKey" @change="savePrefs">
+            <option v-for="col in columns" :key="col.key" :value="col.key">{{ col.label }}</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Direction</span>
+          <select v-model="sortDir" @change="savePrefs">
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+          </select>
+        </label>
+      </div>
+    </Collapse>
   <div class="list">
     <div class="list-header" role="row">
       <button
@@ -102,7 +98,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { Collapse } from 'vue-collapsed'
 import type { ContainerAction, ContainerRow } from '~/composables/useApi'
 import { humanBytes, pct } from '~/utils/format'
@@ -268,7 +264,7 @@ function savePrefs() {
   } catch {}
 }
 
-loadPrefs()
+onMounted(loadPrefs)
 
 function arrowClass(key: SortKey) {
   if (sortKey.value !== key) return 'idle'
