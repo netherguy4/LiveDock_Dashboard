@@ -11,6 +11,7 @@ export type Snapshot = {
     cpu_cores: number
   }
   cpu: number
+  cpu_per_core: number[]
   mem_point: {
     mem: number
     mem_used: number
@@ -49,6 +50,7 @@ export type ContainerRow = {
 export type HistoryPoint = {
   ts: string
   cpu: number
+  cpu_per_core: number[]
   mem: number
   mem_used: number
   mem_total: number

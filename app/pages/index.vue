@@ -40,7 +40,7 @@
       <StatCard
         label="CPU"
         :value="pct(snapshot?.cpu)"
-        :sub="`${snapshot?.host?.cpu_cores ?? 0} cores · load ${loadStr}`"
+        :sub="`${snapshot?.host?.cpu_cores ?? 0} cores`"
         :bar="snapshot?.cpu"
       />
       <StatCard
