@@ -62,7 +62,7 @@
       <StatCard
         v-for="d in (snapshot?.disks ?? []).slice(0, 2)"
         :key="d.path"
-        :label="`Disk ${d.path}`"
+        :label="`Disk ${d.device ? d.device.replace(/^.*\//, '') : d.path}`"
         :value="pct(d.used_pct)"
         :sub="`${humanBytes(d.used)} / ${humanBytes(d.total)}`"
         :bar="d.used_pct"

@@ -85,8 +85,8 @@
       <div class="state">{{ c.status }}</div>
       <div class="metric num" data-label="CPU">{{ c.stat ? pct(c.stat.cpu) : '—' }}</div>
       <div class="metric num" data-label="Mem">{{ c.stat ? humanBytes(c.stat.mem_used) : '—' }}</div>
-      <div class="metric num" data-label="Download">{{ c.stat ? humanBytes(c.stat.net_rx) : '—' }}</div>
-      <div class="metric num" data-label="Upload">{{ c.stat ? humanBytes(c.stat.net_tx) : '—' }}</div>
+      <div class="metric num" data-label="Download">{{ c.stat ? humanBps(c.stat.net_rx_bps) : '—' }}</div>
+      <div class="metric num" data-label="Upload">{{ c.stat ? humanBps(c.stat.net_tx_bps) : '—' }}</div>
       <div class="actions" @click.stop>
         <button v-if="c.state !== 'running'" @click="act(c, 'start')" title="Start">▶</button>
         <button v-if="c.state === 'running'" @click="act(c, 'restart')" title="Restart">⟳</button>
@@ -101,7 +101,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { Collapse } from 'vue-collapsed'
 import type { ContainerAction, ContainerRow } from '~/composables/useApi'
-import { humanBytes, pct } from '~/utils/format'
+import { humanBps, humanBytes, pct } from '~/utils/format'
 
 type SortKey = 'name' | 'state' | 'cpu' | 'mem' | 'rx' | 'tx'
 type SortDir = 'asc' | 'desc'
@@ -179,8 +179,8 @@ const sortValue = (c: ContainerRow, key: SortKey): string | number => {
     case 'state': return stateRank(c.state)
     case 'cpu':   return c.stat?.cpu ?? -1
     case 'mem':   return c.stat?.mem_used ?? -1
-    case 'rx':    return c.stat?.net_rx ?? -1
-    case 'tx':    return c.stat?.net_tx ?? -1
+    case 'rx':    return c.stat?.net_rx_bps ?? -1
+    case 'tx':    return c.stat?.net_tx_bps ?? -1
   }
 }
 
@@ -204,12 +204,10 @@ const sorted = computed(() => {
     const bv = sortValue(b, key)
     if (av < bv) return -1 * dir
     if (av > bv) return 1 * dir
-    // Tie-breakers: within same state, sort by uptime.
-    // desc → longest uptime first, asc → shortest uptime first.
-    if (key === 'state') {
-      const au = parseUptimeSeconds(a.status)
-      const bu = parseUptimeSeconds(b.status)
-      if (au !== bu) return (au - bu) * dir
+    // Tie-breakers: within same state, sort by state_ts (when state started).
+    // asc → oldest state first, desc → newest state first.
+    if (key === 'state' && a.state_ts && b.state_ts && a.state_ts !== b.state_ts) {
+      return (a.state_ts - b.state_ts) * dir
     }
     return a.name.localeCompare(b.name)
   })

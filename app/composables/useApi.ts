@@ -19,7 +19,7 @@ export type Snapshot = {
   load: [number, number, number]
   net_rx_bps: number
   net_tx_bps: number
-  disks: { path: string; total: number; used: number; used_pct: number }[]
+  disks: { path: string; device: string; total: number; used: number; used_pct: number }[]
   containers: ContainerRow[]
 }
 
@@ -30,6 +30,7 @@ export type ContainerRow = {
   state: string
   status: string
   created: number
+  state_ts: number
   ports?: string[]
   stat?: {
     cpu: number
@@ -38,6 +39,8 @@ export type ContainerRow = {
     mem_limit: number
     net_rx: number
     net_tx: number
+    net_rx_bps: number
+    net_tx_bps: number
     blk_read: number
     blk_write: number
   }
