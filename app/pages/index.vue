@@ -28,9 +28,10 @@
             <option :value="30000">30s</option>
           </select>
         </label>
-        <div class="last-update" :class="{ stale: !paused && staleness > 5 }">
+        <div class="last-update" :class="{ stale: !paused && lastUpdated > 0 && staleness > 5 }">
           <template v-if="paused">paused</template>
-          <template v-else>last update {{ Math.max(staleness, 0).toFixed(0) }}s ago</template>
+          <template v-else-if="lastUpdated === 0">connecting…</template>
+          <template v-else>last update {{ staleness.toFixed(0) }}s ago</template>
         </div>
       </div>
     </header>
@@ -49,14 +50,14 @@
         :bar="snapshot?.mem_point?.mem"
       />
       <StatCard
-        label="Network ↓"
+        label="Download"
         :value="humanBps(snapshot?.net_rx_bps)"
-        sub="rx"
+        sub="incoming"
       />
       <StatCard
-        label="Network ↑"
+        label="Upload"
         :value="humanBps(snapshot?.net_tx_bps)"
-        sub="tx"
+        sub="outgoing"
       />
       <StatCard
         v-for="d in (snapshot?.disks ?? []).slice(0, 2)"
@@ -70,19 +71,19 @@
 
     <section class="charts">
       <TimeChart
-        :labels="chartLabels"
+        :labels="series.labels"
         :datasets="[
-          { label: 'CPU %', data: cpuSeries, color: '#3b82f6' },
-          { label: 'Mem %', data: memSeries, color: '#8b5cf6' },
+          { label: 'CPU %', data: series.cpu, color: '#3b82f6' },
+          { label: 'Mem %', data: series.mem, color: '#8b5cf6' },
         ]"
         yUnit="%"
         :yMax="100"
       />
       <TimeChart
-        :labels="chartLabels"
+        :labels="series.labels"
         :datasets="[
-          { label: 'RX MB/s', data: netRxSeries, color: '#10b981' },
-          { label: 'TX MB/s', data: netTxSeries, color: '#f59e0b' },
+          { label: 'Download MB/s', data: series.rx, color: '#10b981' },
+          { label: 'Upload MB/s', data: series.tx, color: '#f59e0b' },
         ]"
         yUnit=" MB/s"
       />
@@ -111,78 +112,87 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import type { HistoryPoint, Snapshot } from '~/composables/useApi'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import type { ContainerAction, HistoryPoint, Snapshot } from '~/composables/useApi'
 import { humanBps, humanBytes, humanDuration, pct } from '~/utils/format'
 
-const config = useRuntimeConfig()
-const defaultPollMs = config.public.pollInterval
-
+const MB = 1024 * 1024
 const STORAGE_KEY = 'monitoring:pollPrefs'
+const HISTORY_MINUTES = 15
+
+const config = useRuntimeConfig()
+
 const snapshot = ref<Snapshot | null>(null)
 const history = ref<HistoryPoint[]>([])
-const lastUpdated = ref<number>(0)
 const now = ref<number>(Date.now())
+const lastUpdated = ref<number>(0)
 const selectedId = ref<string | null>(null)
 const toast = ref<{ text: string; type: 'ok' | 'err' } | null>(null)
-const intervalMs = ref<number>(defaultPollMs)
-const paused = ref<boolean>(false)
-
-const staleness = computed(() => (now.value - lastUpdated.value) / 1000)
-const selectedName = computed(
-  () => snapshot.value?.containers.find((c) => c.id === selectedId.value)?.name ?? '',
-)
-const loadStr = computed(() => {
-  const l = snapshot.value?.load
-  if (!l) return '—'
-  return `${l[0].toFixed(2)} ${l[1].toFixed(2)} ${l[2].toFixed(2)}`
-})
-
-const chartLabels = computed(() =>
-  history.value.map((p) => new Date(p.ts).toLocaleTimeString()),
-)
-const cpuSeries = computed(() => history.value.map((p) => round(p.cpu)))
-const memSeries = computed(() => history.value.map((p) => round(p.mem)))
-const netRxSeries = computed(() =>
-  history.value.map((p) => round(p.net_rx_bps / 1024 / 1024, 2)),
-)
-const netTxSeries = computed(() =>
-  history.value.map((p) => round(p.net_tx_bps / 1024 / 1024, 2)),
-)
-
-function round(n: number, d = 1) {
-  return Number(n.toFixed(d))
-}
 
 async function pollSnapshot() {
   try {
-    const s = await $fetch<Snapshot>('/api/snapshot')
-    snapshot.value = s
+    snapshot.value = await $fetch<Snapshot>('/api/snapshot')
     lastUpdated.value = Date.now()
-  } catch (e) {
-    // keep last snapshot
+  } catch {
+    /* keep last snapshot */
   }
 }
 
 async function pollHistory() {
   try {
-    history.value = await $fetch<HistoryPoint[]>('/api/history', { params: { minutes: 15 } })
-  } catch (e) {
-    // ignore
+    history.value = await $fetch<HistoryPoint[]>('/api/history', {
+      params: { minutes: HISTORY_MINUTES },
+    })
+  } catch {
+    /* ignore */
   }
+}
+
+const { intervalMs, paused, toggle: togglePause } = usePolling(
+  [
+    pollSnapshot,
+    { run: pollHistory, every: 5, minMs: 10000 },
+  ],
+  { defaultMs: config.public.pollInterval, storageKey: STORAGE_KEY },
+)
+
+const staleness = computed(() => Math.max(0, (now.value - lastUpdated.value) / 1000))
+const selectedName = computed(
+  () => snapshot.value?.containers.find((c) => c.id === selectedId.value)?.name ?? '',
+)
+const loadStr = computed(() => {
+  const l = snapshot.value?.load
+  return l ? `${l[0].toFixed(2)} ${l[1].toFixed(2)} ${l[2].toFixed(2)}` : '—'
+})
+
+const series = computed(() => {
+  const labels: string[] = []
+  const cpu: number[] = []
+  const mem: number[] = []
+  const rx: number[] = []
+  const tx: number[] = []
+  for (const p of history.value) {
+    labels.push(new Date(p.ts).toLocaleTimeString())
+    cpu.push(round(p.cpu))
+    mem.push(round(p.mem))
+    rx.push(round(p.net_rx_bps / MB, 2))
+    tx.push(round(p.net_tx_bps / MB, 2))
+  }
+  return { labels, cpu, mem, rx, tx }
+})
+
+function round(n: number, d = 1) {
+  return Number(n.toFixed(d))
 }
 
 function onSelect(id: string) {
   selectedId.value = selectedId.value === id ? null : id
 }
 
-async function onAction(p: { id: string; name: string; action: 'start' | 'stop' | 'restart' }) {
+async function onAction(p: { id: string; name: string; action: ContainerAction }) {
   if (p.action === 'stop' && !confirm(`Stop ${p.name}?`)) return
   try {
-    await $fetch(`/api/containers/${p.id}/action`, {
-      method: 'POST',
-      body: { action: p.action },
-    })
+    await $fetch(`/api/containers/${p.id}/action`, { method: 'POST', body: { action: p.action } })
     showToast(`${p.action} ${p.name}: ok`, 'ok')
     setTimeout(pollSnapshot, 800)
   } catch (e: any) {
@@ -192,67 +202,14 @@ async function onAction(p: { id: string; name: string; action: 'start' | 'stop' 
 
 function showToast(text: string, type: 'ok' | 'err') {
   toast.value = { text, type }
-  setTimeout(() => {
-    toast.value = null
-  }, 3000)
+  setTimeout(() => (toast.value = null), 3000)
 }
 
-let snapTimer: any = null
-let histTimer: any = null
-let nowTimer: any = null
-
-function startPolling() {
-  stopPolling()
-  if (paused.value) return
-  pollSnapshot()
-  pollHistory()
-  snapTimer = setInterval(pollSnapshot, intervalMs.value)
-  histTimer = setInterval(pollHistory, Math.max(intervalMs.value * 5, 10000))
-}
-
-function stopPolling() {
-  if (snapTimer) { clearInterval(snapTimer); snapTimer = null }
-  if (histTimer) { clearInterval(histTimer); histTimer = null }
-}
-
-function togglePause() {
-  paused.value = !paused.value
-}
-
-function loadPrefs() {
-  if (typeof localStorage === 'undefined') return
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return
-    const p = JSON.parse(raw)
-    if (typeof p.intervalMs === 'number' && p.intervalMs >= 500) intervalMs.value = p.intervalMs
-    if (typeof p.paused === 'boolean') paused.value = p.paused
-  } catch {}
-}
-
-function savePrefs() {
-  if (typeof localStorage === 'undefined') return
-  try {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({ intervalMs: intervalMs.value, paused: paused.value }),
-    )
-  } catch {}
-}
-
-watch([intervalMs, paused], () => {
-  savePrefs()
-  startPolling()
-})
-
+let nowTimer: ReturnType<typeof setInterval> | null = null
 onMounted(() => {
-  loadPrefs()
-  startPolling()
   nowTimer = setInterval(() => (now.value = Date.now()), 1000)
 })
-
 onUnmounted(() => {
-  stopPolling()
   if (nowTimer) clearInterval(nowTimer)
 })
 </script>

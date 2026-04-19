@@ -3,19 +3,23 @@
     <div class="label">{{ label }}</div>
     <div class="value">{{ value }}</div>
     <div v-if="sub" class="sub">{{ sub }}</div>
-    <div v-if="bar != null" class="bar">
-      <div class="bar-fill" :style="{ width: Math.min(100, Math.max(0, bar)) + '%', background: barColor(bar) }" />
+    <div v-if="barStyle" class="bar">
+      <div class="bar-fill" :style="barStyle" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-defineProps<{ label: string; value: string; sub?: string; bar?: number }>()
-function barColor(p: number) {
-  if (p > 85) return '#ef4444'
-  if (p > 65) return '#f59e0b'
-  return '#10b981'
-}
+import { computed } from 'vue'
+
+const props = defineProps<{ label: string; value: string; sub?: string; bar?: number }>()
+
+const barStyle = computed(() => {
+  if (props.bar == null || !Number.isFinite(props.bar)) return null
+  const pct = Math.min(100, Math.max(0, props.bar))
+  const background = pct > 85 ? '#ef4444' : pct > 65 ? '#f59e0b' : '#10b981'
+  return { width: `${pct}%`, background }
+})
 </script>
 
 <style scoped>

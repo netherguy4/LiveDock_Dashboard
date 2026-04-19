@@ -25,9 +25,10 @@ defineEmits(['close'])
 const lines = ref<string[]>([])
 const autoScroll = ref(true)
 const pre = ref<HTMLElement | null>(null)
-let timer: any = null
+let timer: ReturnType<typeof setInterval> | null = null
 let lastFetched = 0
-const maxLines = 500
+const MAX_LINES = 500
+const POLL_MS = 1000
 
 async function poll() {
   try {
@@ -35,11 +36,9 @@ async function poll() {
       `/api/containers/${props.id}/logs`,
       { params: lastFetched ? { since: lastFetched, tail: 0 } : { tail: 200 } },
     )
-    if (res.lines && res.lines.length) {
-      lines.value.push(...res.lines)
-      if (lines.value.length > maxLines) {
-        lines.value = lines.value.slice(-maxLines)
-      }
+    if (res.lines?.length) {
+      const combined = lines.value.concat(res.lines)
+      lines.value = combined.length > MAX_LINES ? combined.slice(-MAX_LINES) : combined
       if (autoScroll.value) {
         await nextTick()
         if (pre.value) pre.value.scrollTop = pre.value.scrollHeight
@@ -55,7 +54,7 @@ function start() {
   lines.value = []
   lastFetched = 0
   poll()
-  timer = setInterval(poll, 1000)
+  timer = setInterval(poll, POLL_MS)
 }
 
 function stop() {

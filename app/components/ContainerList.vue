@@ -5,8 +5,8 @@
       <div class="th">State</div>
       <div class="th num">CPU</div>
       <div class="th num">Memory</div>
-      <div class="th num">Net ↓</div>
-      <div class="th num">Net ↑</div>
+      <div class="th num">Download</div>
+      <div class="th num">Upload</div>
       <div class="th actions">Actions</div>
     </div>
     <div
@@ -26,8 +26,8 @@
       <div class="state">{{ c.status }}</div>
       <div class="metric num" data-label="CPU">{{ c.stat ? pct(c.stat.cpu) : '—' }}</div>
       <div class="metric num" data-label="Mem">{{ c.stat ? humanBytes(c.stat.mem_used) : '—' }}</div>
-      <div class="metric num" data-label="↓">{{ c.stat ? humanBytes(c.stat.net_rx) : '—' }}</div>
-      <div class="metric num" data-label="↑">{{ c.stat ? humanBytes(c.stat.net_tx) : '—' }}</div>
+      <div class="metric num" data-label="Download">{{ c.stat ? humanBytes(c.stat.net_rx) : '—' }}</div>
+      <div class="metric num" data-label="Upload">{{ c.stat ? humanBytes(c.stat.net_tx) : '—' }}</div>
       <div class="actions" @click.stop>
         <button v-if="c.state !== 'running'" @click="act(c, 'start')" title="Start">▶</button>
         <button v-if="c.state === 'running'" @click="act(c, 'restart')" title="Restart">⟳</button>

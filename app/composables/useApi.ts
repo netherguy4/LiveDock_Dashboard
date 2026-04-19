@@ -1,10 +1,3 @@
-export function useApi() {
-  const fetchJson = async <T>(path: string, opts: any = {}): Promise<T> => {
-    return await $fetch<T>(`/api/${path.replace(/^\//, '')}`, opts)
-  }
-  return { fetchJson }
-}
-
 export type Snapshot = {
   ts: string
   host: {
@@ -62,3 +55,5 @@ export type HistoryPoint = {
   load5: number
   load15: number
 }
+
+export type ContainerAction = 'start' | 'stop' | 'restart'
