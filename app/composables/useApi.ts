@@ -20,6 +20,8 @@ export type Snapshot = {
   load: [number, number, number]
   net_rx_bps: number
   net_tx_bps: number
+  disk_read_bps: number
+  disk_write_bps: number
   disks: { path: string; device: string; total: number; used: number; used_pct: number }[]
   containers: ContainerRow[]
 }
@@ -56,6 +58,8 @@ export type HistoryPoint = {
   mem_total: number
   net_rx_bps: number
   net_tx_bps: number
+  disk_read_bps: number
+  disk_write_bps: number
   load1: number
   load5: number
   load15: number
