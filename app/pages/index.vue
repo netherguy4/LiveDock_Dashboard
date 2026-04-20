@@ -93,6 +93,7 @@
       <h2>Containers</h2>
       <ContainerList
         :containers="snapshot?.containers ?? []"
+        :tunnels="tunnels"
         :selectedId="selectedId"
         @select="onSelect"
         @action="onAction"
@@ -124,6 +125,7 @@ const config = useRuntimeConfig()
 
 const snapshot = ref<Snapshot | null>(null)
 const history = ref<HistoryPoint[]>([])
+const tunnels = ref<Record<string, string[]>>({})
 const now = ref<number>(Date.now())
 const lastUpdated = ref<number>(0)
 const selectedId = ref<string | null>(null)
@@ -135,6 +137,14 @@ async function pollSnapshot() {
     lastUpdated.value = Date.now()
   } catch {
     /* keep last snapshot */
+  }
+}
+
+async function pollTunnels() {
+  try {
+    tunnels.value = await $fetch<Record<string, string[]>>('/api/tunnels')
+  } catch {
+    /* ignore */
   }
 }
 
@@ -152,6 +162,7 @@ const { intervalMs, paused, toggle: togglePause } = usePolling(
   [
     pollSnapshot,
     { run: pollHistory, every: 5, minMs: 10000 },
+    { run: pollTunnels, every: 30, minMs: 60000 },
   ],
   { defaultMs: config.public.pollInterval, storageKey: STORAGE_KEY },
 )
