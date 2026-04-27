@@ -80,27 +80,6 @@
         <div class="name-col">
           <div class="primary">
             <span class="name-text">{{ c.name }}</span>
-            <a
-              v-for="url in tunnelUrls(c.name)"
-              :key="url"
-              class="tunnel-link"
-              :href="url"
-              target="_blank"
-              rel="noopener noreferrer"
-              :title="url"
-              @click.stop
-            >
-              <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
-                <path
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.6"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M6.5 9.5 L9.5 6.5 M7 4.5 L9 2.5 A2.5 2.5 0 0 1 13.5 6 L11.5 8 M9 11.5 L7 13.5 A2.5 2.5 0 0 1 2.5 10 L4.5 8"
-                />
-              </svg>
-            </a>
           </div>
           <div class="secondary">{{ c.image }}</div>
         </div>
@@ -133,7 +112,6 @@ type StateFilter = 'all' | 'running' | 'stopped'
 const props = defineProps<{
   containers: ContainerRow[]
   selectedId?: string | null
-  tunnels?: Record<string, string[]>
 }>()
 const emit = defineEmits<{
   (e: 'select', id: string): void
@@ -302,10 +280,6 @@ function stateClass(s: string) {
   return 'down'
 }
 
-function tunnelUrls(name: string): string[] {
-  return props.tunnels?.[name] ?? []
-}
-
 function act(c: ContainerRow, action: ContainerAction) {
   emit('action', { id: c.id, name: c.name, action })
 }
@@ -415,16 +389,6 @@ function act(c: ContainerRow, action: ContainerAction) {
 .name-col { min-width: 0; }
 .primary { color: #e7eaf0; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 6px; min-width: 0; }
 .primary .name-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-.tunnel-link {
-  display: inline-flex;
-  align-items: center;
-  color: #5b6578;
-  flex-shrink: 0;
-  padding: 2px;
-  border-radius: 4px;
-  transition: color 0.15s, background 0.15s;
-}
-.tunnel-link:hover { color: #3b82f6; background: #1a2332; }
 .secondary { color: #5b6578; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .state { color: #97a0b3; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .num { text-align: right; color: #c7ccd6; font-variant-numeric: tabular-nums; font-size: 13px; }
