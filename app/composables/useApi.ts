@@ -1,3 +1,7 @@
+// API types shared across adapters and stores.
+// Wire format mirrors what the Go backend emits — DO NOT change here without
+// matching backend/internal/{collector,docker,api}.
+
 export type Snapshot = {
   ts: string
   host: {
@@ -66,3 +70,69 @@ export type HistoryPoint = {
 }
 
 export type ContainerAction = 'start' | 'stop' | 'restart'
+
+export type LogsResponse = {
+  lines: string[]
+  fetched: number // unix nanoseconds — pass back as `since` for next poll
+}
+
+export type RequestsPoint = {
+  ts: number   // unix seconds, truncated to minute
+  count: number
+}
+
+export type Host = {
+  id: string
+  name: string
+  url: string
+  current: boolean
+}
+
+export type TunnelMap = Record<string, string[]>
+
+// hostHeaders attaches the active host's URL/token to a proxied request so the
+// Nuxt server can route to the right backend. Empty for the default host —
+// the server falls back to BACKEND_URL/API_TOKEN.
+function hostHeaders(): Record<string, string> {
+  // Avoid pulling in the store on the server during SSR — the proxy runs on
+  // the server too, so headers are only meaningful for browser-originated calls.
+  if (typeof window === 'undefined') return {}
+  try {
+    const store = useHostsStore()
+    const h = store.active
+    if (!h || !h.url) return {}
+    const out: Record<string, string> = { 'X-Mon-Url': h.url }
+    if (h.token) out['X-Mon-Token'] = h.token
+    return out
+  } catch {
+    return {}
+  }
+}
+
+// Lightweight typed wrapper for $fetch — keeps URLs in one place and avoids
+// repeating `as Foo` casts at call sites.
+export const useApi = () => {
+  const headers = () => hostHeaders()
+  return {
+    snapshot: () => $fetch<Snapshot>('/api/snapshot', { headers: headers() }),
+    history: (minutes = 15) =>
+      $fetch<HistoryPoint[]>('/api/history', { query: { minutes }, headers: headers() }),
+    containers: () => $fetch<ContainerRow[]>('/api/containers', { headers: headers() }),
+    logs: (id: string, opts: { tail?: number; since?: number } = {}) =>
+      $fetch<LogsResponse>(`/api/containers/${encodeURIComponent(id)}/logs`, {
+        query: { tail: opts.tail ?? 200, since: opts.since },
+        headers: headers(),
+      }),
+    action: (id: string, action: ContainerAction) =>
+      $fetch(`/api/containers/${encodeURIComponent(id)}/action`, {
+        method: 'POST',
+        body: { action },
+        headers: headers(),
+      }),
+    requests: (hours = 12) =>
+      $fetch<RequestsPoint[]>('/api/requests', { query: { hours }, headers: headers() }),
+    hosts: () => $fetch<Host[]>('/api/hosts', { headers: headers() }),
+    tunnels: () =>
+      $fetch<TunnelMap>('/api/tunnels', { headers: headers() }).catch(() => ({}) as TunnelMap),
+  }
+}

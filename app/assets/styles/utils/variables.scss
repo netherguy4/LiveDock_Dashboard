@@ -1,0 +1,32 @@
+// SCSS-only variables. Colors live in CSS variables (see base/base.scss) so
+// the dark/light theme can be swapped at runtime — these here are values we
+// can't reasonably express as runtime tokens (z-index stacking, transitions,
+// font stack, etc).
+
+// Z-index scale ----------------------------------------------------------
+$z-base: 1;
+$z-sticky: 10;
+$z-overlay: 50;
+$z-dropdown: 60;
+$z-modal: 70;
+$z-toast: 80;
+$z-tooltip: 90;
+
+// Transitions ------------------------------------------------------------
+$ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+$ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+$transition-fast: 120ms $ease-out;
+$transition-base: 180ms $ease-out;
+$transition-slow: 300ms $ease-out;
+
+// Typography -------------------------------------------------------------
+$font-stack-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui,
+  'Inter', 'Roboto', 'Helvetica Neue', sans-serif;
+$font-stack-mono: ui-monospace, SFMono-Regular, 'JetBrains Mono', 'Fira Code',
+  Menlo, Monaco, Consolas, monospace;
+
+// Layout -----------------------------------------------------------------
+$sidebar-width: 248px;
+$sidebar-width-collapsed: 64px;
+$header-height: 56px;
+$content-max-width: 1400px;

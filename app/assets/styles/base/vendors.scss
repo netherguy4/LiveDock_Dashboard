@@ -1,0 +1,16 @@
+@use '../utils/variables' as *;
+
+// Overrides for third-party libraries. Empty for now — populate as we
+// integrate Reka UI, vue-sonner, etc.
+
+// vue-sonner toast container — match our radius/border/colors.
+:where([data-sonner-toaster]) {
+  --normal-bg: var(--color-card);
+  --normal-text: var(--color-foreground);
+  --normal-border: var(--color-border);
+  --success-bg: var(--color-card);
+  --success-text: var(--color-success);
+  --error-bg: var(--color-card);
+  --error-text: var(--color-danger);
+  font-family: $font-stack-sans;
+}

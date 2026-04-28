@@ -1,0 +1,46 @@
+// Snapshot + history state. The single source of truth for live host metrics.
+// Polled by the global polling driver in app.vue, never inside components.
+
+import { defineStore } from 'pinia'
+import type { HistoryPoint, Snapshot } from '~/composables/useApi'
+
+export const useMetricsStore = defineStore('metrics', {
+  state: () => ({
+    snapshot: null as Snapshot | null,
+    history: [] as HistoryPoint[],
+    loading: false,
+    error: null as string | null,
+    lastUpdated: 0,
+  }),
+
+  getters: {
+    isStale: (s) => s.lastUpdated > 0 && Date.now() - s.lastUpdated > 10_000,
+    hostInfo: (s) => s.snapshot?.host ?? null,
+    cpuPct: (s) => s.snapshot?.cpu ?? 0,
+    memPct: (s) => s.snapshot?.mem_point?.mem ?? 0,
+    netBps: (s) => (s.snapshot?.net_rx_bps ?? 0) + (s.snapshot?.net_tx_bps ?? 0),
+    diskBps: (s) => (s.snapshot?.disk_read_bps ?? 0) + (s.snapshot?.disk_write_bps ?? 0),
+  },
+
+  actions: {
+    async refreshSnapshot() {
+      this.loading = true
+      try {
+        this.snapshot = await useApi().snapshot()
+        this.lastUpdated = Date.now()
+        this.error = null
+      } catch (e: unknown) {
+        this.error = e instanceof Error ? e.message : String(e)
+      } finally {
+        this.loading = false
+      }
+    },
+    async refreshHistory(minutes = 15) {
+      try {
+        this.history = await useApi().history(minutes)
+      } catch (e: unknown) {
+        this.error = e instanceof Error ? e.message : String(e)
+      }
+    },
+  },
+})

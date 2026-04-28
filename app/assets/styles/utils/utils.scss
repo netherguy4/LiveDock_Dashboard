@@ -1,0 +1,11 @@
+// Pure SCSS helpers (functions). No selectors — safe to @use anywhere.
+
+@use 'sass:math';
+
+@function rem($px) {
+  @return math.div($px, 16) * 1rem;
+}
+
+@function strip-unit($n) {
+  @return math.div($n, ($n * 0 + 1));
+}

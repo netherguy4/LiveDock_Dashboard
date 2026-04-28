@@ -1,0 +1,31 @@
+@use '../../utils/variables' as *;
+
+// Page-level container block. Used by layouts/pages to align content.
+.page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.page__inner {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: $content-max-width;
+  margin-inline: auto;
+  padding: var(--space-6) clamp(var(--space-4), 3vw, var(--space-8));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.page__title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.page__subtitle {
+  color: var(--color-muted-foreground);
+  font-size: 0.875rem;
+}

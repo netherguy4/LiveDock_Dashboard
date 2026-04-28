@@ -1,0 +1,285 @@
+// Entry point for global styles. Order matters:
+//   1. tokens (CSS vars) — must be first so everything below sees them
+//   2. reset — neutralize browser defaults
+//   3. fonts — set typography on top of reset
+//   4. helpers — utility classes
+//   5. transitions — global Vue transitions
+//   6. vendors — third-party overrides
+
+@use 'reset';
+@use 'fonts';
+@use 'helpers';
+@use 'transitions';
+@use 'vendors';
+@use 'blocks/container';
+
+// ============================================================
+// Design tokens — CSS variables (runtime themeable).
+// Light theme is the default on :root; dark is opt-in via .theme--dark.
+// Token names follow shadcn convention from new_frontend/ for easy porting,
+// plus brand (emerald/cyan) and semantic (success/warn/danger/info) colors.
+// ============================================================
+
+:root {
+  // Slate scale (raw, used directly in components for the new design)
+  --slate-50:  #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+  --slate-950: #020617;
+
+  // Brand accents
+  --sky-400:     #38bdf8;
+  --emerald-300: #6ee7b7;
+  --emerald-400: #34d399;
+  --emerald-500: #10b981;
+  --emerald-600: #059669;
+  --teal-400:    #2dd4bf;
+  --teal-500:    #14b8a6;
+  --teal-600:    #0d9488;
+  --cyan-400:    #22d3ee;
+  --cyan-500:    #06b6d4;
+  --cyan-600:    #0891b2;
+  --amber-300:   #fcd34d;
+  --amber-400:   #fbbf24;
+  --amber-500:   #f59e0b;
+  --red-300:     #fca5a5;
+  --red-400:     #f87171;
+  --red-500:     #ef4444;
+  --blue-400:    #60a5fa;
+  --blue-500:    #3b82f6;
+
+  // Surfaces — light theme
+  --color-background: var(--slate-50);
+  --color-foreground: var(--slate-900);
+  --color-card: #ffffff;
+  --color-card-foreground: var(--slate-900);
+  --color-card-subtle: var(--slate-50);
+  --color-popover: #ffffff;
+  --color-popover-foreground: var(--slate-900);
+  --color-muted: var(--slate-100);
+  --color-muted-foreground: var(--slate-500);
+  --color-subtle-foreground: var(--slate-400);
+  --color-accent: var(--slate-100);
+  --color-accent-foreground: var(--slate-900);
+  --color-border: var(--slate-200);
+  --color-divider: var(--slate-100);
+  --color-input: transparent;
+  --color-input-background: #ffffff;
+  --color-input-border: var(--slate-200);
+  --color-track: var(--slate-100);
+  --color-row-header: var(--slate-50);
+  --color-ring: var(--slate-300);
+
+  // Brand
+  --brand-from: var(--emerald-500);
+  --brand-via:  var(--teal-500);
+  --brand-to:   var(--cyan-600);
+  --gradient-brand: linear-gradient(135deg, var(--brand-from), var(--brand-via) 50%, var(--brand-to));
+  --color-brand-from: var(--brand-from);
+  --color-brand-to:   var(--brand-to);
+  --color-brand-glow: rgba(20, 184, 166, 0.25);
+  --color-primary: var(--slate-900);
+  --color-primary-foreground: #ffffff;
+  --color-destructive: var(--red-500);
+  --color-destructive-foreground: #ffffff;
+
+  // Semantic
+  --color-success: oklch(0.696 0.17 162.48);  // emerald-500
+  --color-warning: oklch(0.828 0.189 84.429); // amber-500
+  --color-danger:  oklch(0.637 0.237 25.331); // red-500
+  --color-info:    oklch(0.65 0.13 220);      // blue/cyan
+  --color-stopped: oklch(0.556 0.02 260);     // muted cool gray
+
+  // Accent opacities — use OKLCH directly for alpha support
+  --color-accent-bg:     oklch(0.696 0.17 162.48 / 0.10);
+  --color-accent-subtle: oklch(0.696 0.17 162.48 / 0.08);
+  --color-accent-border: oklch(0.696 0.17 162.48 / 0.30);
+  --color-accent-hover:  oklch(0.696 0.17 162.48 / 0.15);
+
+  // Skeleton
+  --color-skeleton:       oklch(0.87 0.005 180);
+  --color-skeleton-shine: oklch(0.94 0.005 180);
+
+  // Sidebar
+  --color-sidebar: oklch(0.99 0 0);
+  --color-sidebar-foreground: oklch(0.145 0 0);
+  --color-sidebar-border: oklch(0.922 0 0);
+  --color-sidebar-accent: oklch(0.97 0 0);
+  --color-sidebar-accent-foreground: oklch(0.205 0 0);
+
+  // Charts (5-stop palette)
+  --color-chart-1: oklch(0.696 0.17 162.48);
+  --color-chart-2: oklch(0.65 0.13 220);
+  --color-chart-3: oklch(0.769 0.188 70.08);
+  --color-chart-4: oklch(0.627 0.265 303.9);
+  --color-chart-5: oklch(0.645 0.246 16.439);
+
+  // Scrollbar
+  --color-scrollbar-thumb: oklch(0.85 0.05 180 / 0.5);
+  --color-scrollbar-thumb-hover: oklch(0.7 0.1 180 / 0.7);
+
+  // Radii
+  --radius: 0.625rem;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  // Shadows
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+  --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.06);
+  --shadow-lg: 0 12px 32px -8px rgb(0 0 0 / 0.10);
+
+  // Spacing scale (mirror Tailwind's defaults so design tokens line up)
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  // Typography scale (lifted from React design)
+  --fs-h1: 32px;
+  --fs-h2: 22px;
+  --fs-h3: 16px;
+  --fs-body: 14px;
+  --fs-label: 13px;
+  --fs-small: 12px;
+  --fs-caption: 11px;
+  --fs-mono: 12px;
+
+  --fw-bold: 700;
+  --fw-extrabold: 800;
+  --fw-semibold: 600;
+  --fw-medium: 500;
+
+  // Layout
+  --layout-max: 80rem;
+  --header-h: 56px;
+
+  color-scheme: light;
+}
+
+.theme--dark {
+  --color-background: var(--slate-950);
+  --color-foreground: var(--slate-100);
+  --color-card: var(--slate-900);
+  --color-card-foreground: var(--slate-100);
+  --color-card-subtle: rgba(15, 23, 42, 0.5);
+  --color-popover: var(--slate-900);
+  --color-popover-foreground: var(--slate-100);
+  --color-muted: var(--slate-800);
+  --color-muted-foreground: var(--slate-400);
+  --color-subtle-foreground: var(--slate-500);
+  --color-accent: var(--slate-800);
+  --color-accent-foreground: var(--slate-100);
+  --color-border: var(--slate-800);
+  --color-divider: var(--slate-800);
+  --color-input: var(--slate-700);
+  --color-input-background: var(--slate-950);
+  --color-input-border: var(--slate-700);
+  --color-track: var(--slate-800);
+  --color-row-header: rgba(15, 23, 42, 0.6);
+  --color-ring: var(--slate-700);
+
+  --color-primary: #ffffff;
+  --color-primary-foreground: var(--slate-900);
+  --color-destructive: var(--red-500);
+  --color-destructive-foreground: #ffffff;
+  --color-brand-glow: rgba(94, 234, 212, 0.25);
+
+  --color-sidebar: oklch(0.16 0 0);
+  --color-sidebar-foreground: oklch(0.985 0 0);
+  --color-sidebar-border: oklch(0.269 0 0);
+  --color-sidebar-accent: oklch(0.22 0 0);
+  --color-sidebar-accent-foreground: oklch(0.985 0 0);
+
+  --color-chart-1: oklch(0.696 0.17 162.48);
+  --color-chart-2: oklch(0.65 0.13 220);
+  --color-chart-3: oklch(0.769 0.188 70.08);
+  --color-chart-4: oklch(0.627 0.265 303.9);
+  --color-chart-5: oklch(0.645 0.246 16.439);
+
+  --color-scrollbar-thumb: oklch(0.5 0.08 180 / 0.4);
+  --color-scrollbar-thumb-hover: oklch(0.65 0.13 180 / 0.6);
+
+  // Accent opacities — subtle shift for dark
+  --color-accent-bg:     oklch(0.696 0.17 162.48 / 0.12);
+  --color-accent-subtle: oklch(0.696 0.17 162.48 / 0.10);
+  --color-accent-border: oklch(0.696 0.17 162.48 / 0.35);
+  --color-accent-hover:  oklch(0.696 0.17 162.48 / 0.18);
+
+  // Skeleton — darker base for dark backgrounds
+  --color-skeleton:       oklch(0.25 0.005 180);
+  --color-skeleton-shine: oklch(0.32 0.005 180);
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 12px 32px -8px rgb(0 0 0 / 0.6);
+
+  color-scheme: dark;
+}
+
+// ============================================================
+// Body baseline
+// ============================================================
+html, body, #__nuxt {
+  height: 100%;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  transition: background-color $transition-base, color $transition-base;
+}
+
+::selection {
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+
+// Default focus visibility
+:focus-visible {
+  @include focus-ring;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+// Apply themed scrollbar globally
+html {
+  @include scrollbar(10px);
+}
+
+// Skeleton shimmer animation — shared by all skeleton placeholders
+@keyframes skeleton-shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton-pulse {
+  background: linear-gradient(
+    90deg,
+    var(--color-skeleton) 0%,
+    var(--color-skeleton-shine) 40%,
+    var(--color-skeleton) 70%
+  );
+  background-size: 800px 100%;
+  animation: skeleton-shimmer 1.8s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+
+// Global reduced-motion: disable skeleton animation
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-pulse { animation: none; }
+}
