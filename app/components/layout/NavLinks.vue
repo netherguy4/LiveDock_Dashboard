@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { ROUTES } from '~/configs/routes.config'
+import { useHostsStore } from '~/stores/hosts.store'
 
 const route = useRoute()
+const hosts = useHostsStore()
 
-const NAV = [
-  { label: 'Dashboard', to: ROUTES.HOME },
-  { label: 'Containers', to: ROUTES.CONTAINERS },
-] as const
+const NAV = computed(() => {
+  const items = [{ label: 'Dashboard', to: ROUTES.HOME }]
+  if (!hosts.isEmpty) items.push({ label: 'Containers', to: ROUTES.CONTAINERS })
+  return items
+})
 
 function isActive(to: string) {
   if (to === '/') return route.path === '/'

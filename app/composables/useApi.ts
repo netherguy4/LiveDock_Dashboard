@@ -129,7 +129,6 @@ export const useApi = () => {
       }),
     requests: (hours = 12) =>
       $fetch<RequestsPoint[]>('/api/requests', { query: { hours }, headers: headers() }),
-    hosts: () => $fetch<Host[]>('/api/hosts', { headers: headers() }),
     pingHost: (url: string, token?: string) =>
       $fetch<{ ok: boolean; error?: string }>('/api/ping-host', {
         method: 'POST',

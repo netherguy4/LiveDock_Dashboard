@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-04-29T00:00:00.000Z",
+  "title": "Design System: LiveDock",
+  "extensions": {
+    "colorMeta": {
+      "slate-950": { "role": "neutral", "displayName": "Abyssal Slate", "canonical": "oklch(0.13 0.01 250)", "tonalRamp": ["oklch(0.15 0.01 250)", "oklch(0.20 0.01 250)", "oklch(0.27 0.01 250)", "oklch(0.35 0.01 250)", "oklch(0.45 0.01 250)", "oklch(0.55 0.01 250)", "oklch(0.70 0.01 250)", "oklch(0.85 0.01 250)"] },
+      "slate-900": { "role": "neutral", "displayName": "Deep Slate", "canonical": "oklch(0.21 0.01 250)", "tonalRamp": [] },
+      "slate-800": { "role": "neutral", "displayName": "Dark Slate", "canonical": "oklch(0.28 0.01 250)", "tonalRamp": [] },
+      "slate-700": { "role": "neutral", "displayName": "Medium Slate", "canonical": "oklch(0.37 0.01 250)", "tonalRamp": [] },
+      "slate-500": { "role": "neutral", "displayName": "Muted Slate", "canonical": "oklch(0.55 0.01 250)", "tonalRamp": [] },
+      "slate-400": { "role": "neutral", "displayName": "Soft Slate", "canonical": "oklch(0.65 0.01 250)", "tonalRamp": [] },
+      "slate-300": { "role": "neutral", "displayName": "Pale Slate", "canonical": "oklch(0.75 0.01 250)", "tonalRamp": [] },
+      "slate-200": { "role": "neutral", "displayName": "Light Slate", "canonical": "oklch(0.85 0.01 250)", "tonalRamp": [] },
+      "slate-100": { "role": "neutral", "displayName": "Whisper Slate", "canonical": "oklch(0.92 0.01 250)", "tonalRamp": [] },
+      "slate-50": { "role": "neutral", "displayName": "Near White Slate", "canonical": "oklch(0.97 0.005 250)", "tonalRamp": [] },
+      "emerald-500": { "role": "primary", "displayName": "Emerald Signal", "canonical": "oklch(0.696 0.17 162.48)", "tonalRamp": ["oklch(0.15 0.05 162)", "oklch(0.25 0.07 162)", "oklch(0.35 0.09 162)", "oklch(0.45 0.11 162)", "oklch(0.55 0.13 162)", "oklch(0.69 0.17 162)", "oklch(0.80 0.12 162)", "oklch(0.90 0.06 162)"] },
+      "emerald-600": { "role": "primary", "displayName": "Deep Emerald", "canonical": "oklch(0.62 0.17 162)", "tonalRamp": [] },
+      "teal-500": { "role": "primary", "displayName": "Teal Bridge", "canonical": "oklch(0.68 0.12 185)", "tonalRamp": [] },
+      "teal-600": { "role": "primary", "displayName": "Deep Teal", "canonical": "oklch(0.58 0.12 185)", "tonalRamp": [] },
+      "amber-500": { "role": "semantic", "displayName": "Amber Warning", "canonical": "oklch(0.828 0.189 84.429)", "tonalRamp": [] },
+      "red-500": { "role": "semantic", "displayName": "Red Danger", "canonical": "oklch(0.637 0.237 25.331)", "tonalRamp": [] },
+      "blue-400": { "role": "semantic", "displayName": "Blue Info", "canonical": "oklch(0.65 0.13 220)", "tonalRamp": [] }
+    },
+    "typographyMeta": {
+      "body": { "displayName": "Body", "purpose": "Primary content, descriptions, list items. Capped at 65-75ch." },
+      "label": { "displayName": "Label", "purpose": "Form labels, sort headers, filter chips, nav items. 600 weight." },
+      "mono": { "displayName": "Mono Data", "purpose": "Numbers, metrics, URLs, container IDs — anything read as data, not prose." }
+    },
+    "shadows": [
+      { "name": "ambient-sm", "value": "0 1px 2px 0 rgb(0 0 0 / 0.04)", "purpose": "Subtle lift for hover states on interactive cards. Light theme." },
+      { "name": "ambient-md", "value": "0 4px 12px -2px rgb(0 0 0 / 0.06)", "purpose": "Popovers, tooltips, dropdown menus. Light theme." },
+      { "name": "ambient-lg", "value": "0 12px 32px -8px rgb(0 0 0 / 0.10)", "purpose": "Modals, drawers, toast notifications. Light theme." }
+    ],
+    "motion": [
+      { "name": "ease-out-expo", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Default easing for all state transitions. Exponential deceleration — no bounce, no elastic." },
+      { "name": "duration-fast", "value": "120ms", "purpose": "Micro-interactions: hover, focus, toggle." },
+      { "name": "duration-base", "value": "180ms", "purpose": "Standard transitions: page navigations, drawer open/close, view transitions." },
+      { "name": "duration-slow", "value": "300ms", "purpose": "Deliberate reveals: modal entrance, skeleton shimmer." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" },
+      { "name": "2xl", "value": "1536px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Neutral Badge",
+      "kind": "chip",
+      "refersTo": "badge-neutral",
+      "description": "Default badge for counts and neutral status. Appears in container counts, filter summaries, and metric labels.",
+      "html": "<span class=\"ds-badge ds-badge-neutral\">12 of 12</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 8px; font-size: 12px; font-weight: 600; line-height: 1.3; border: 1px solid transparent; white-space: nowrap; } .ds-badge-neutral { background: #f1f5f9; color: #334155; }"
+    },
+    {
+      "name": "Success Badge",
+      "kind": "chip",
+      "refersTo": "badge-success",
+      "description": "Running containers, healthy status, success confirmations. Emerald background at 10% opacity with matching border.",
+      "html": "<span class=\"ds-badge ds-badge-success\">running</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 8px; font-size: 12px; font-weight: 600; line-height: 1.3; white-space: nowrap; } .ds-badge-success { background: rgb(16 185 129 / 0.10); color: #059669; border: 1px solid rgb(16 185 129 / 0.30); }"
+    },
+    {
+      "name": "Warning Badge",
+      "kind": "chip",
+      "refersTo": "badge-warning",
+      "description": "Degraded containers, warnings, attention-required states. Amber tint with muted text.",
+      "html": "<span class=\"ds-badge ds-badge-warning\">degraded</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 8px; font-size: 12px; font-weight: 600; line-height: 1.3; white-space: nowrap; } .ds-badge-warning { background: rgb(245 158 11 / 0.10); color: #b45309; border: 1px solid rgb(245 158 11 / 0.30); }"
+    },
+    {
+      "name": "Danger Badge",
+      "kind": "chip",
+      "refersTo": "badge-danger",
+      "description": "Stopped containers, error states, destructive indicators. Red tint.",
+      "html": "<span class=\"ds-badge ds-badge-danger\">stopped</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 8px; font-size: 12px; font-weight: 600; line-height: 1.3; white-space: nowrap; } .ds-badge-danger { background: rgb(239 68 68 / 0.10); color: #b91c1c; border: 1px solid rgb(239 68 68 / 0.30); }"
+    },
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single most important action on screen. Emerald-teal-cyan gradient with green-tinted glow. Used for 'Add server' CTAs.",
+      "html": "<button class=\"ds-btn-primary\">Add server</button>",
+      "css": ".ds-btn-primary { height: 44px; padding: 0 24px; display: inline-flex; align-items: center; gap: 8px; border: none; border-radius: 10px; background: linear-gradient(135deg, #10b981, #14b8a6 50%, #0891b2); color: #ffffff; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 8px 24px -10px rgba(16, 185, 129, 0.45); transition: opacity 0.12s cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-primary:hover { opacity: 0.92; } .ds-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; } .ds-btn-primary:focus-visible { outline: 2px solid #cbd5e1; outline-offset: 2px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Secondary action that doesn't compete with the primary CTA. Transparent background, border on hover.",
+      "html": "<button class=\"ds-btn-ghost\">Cancel</button>",
+      "css": ".ds-btn-ghost { height: 36px; padding: 0 12px; display: inline-flex; align-items: center; border: 1px solid #e2e8f0; border-radius: 10px; background: transparent; color: #0f172a; font-size: 13px; font-weight: 600; cursor: pointer; transition: background-color 0.12s cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-ghost:hover { background: #f1f5f9; } .ds-btn-ghost:focus-visible { outline: 2px solid #cbd5e1; outline-offset: 2px; }"
+    },
+    {
+      "name": "Search Input",
+      "kind": "input",
+      "refersTo": "input-search",
+      "description": "Full-width search field with leading icon and clear button. Used in the containers panel filter bar.",
+      "html": "<div class=\"ds-search\"><svg class=\"ds-search-icon\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#94a3b8\" stroke-width=\"2\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.35-4.35\"/></svg><input class=\"ds-search-input\" placeholder=\"Search by name or image...\" /></div>",
+      "css": ".ds-search { position: relative; width: 100%; } .ds-search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); } .ds-search-input { width: 100%; height: 36px; padding: 0 32px 0 32px; border-radius: 8px; background: #ffffff; border: 1px solid #e2e8f0; color: #0f172a; font-size: 13px; } .ds-search-input::placeholder { color: #94a3b8; } .ds-search-input:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 3px rgb(16 185 129 / 0.20); }"
+    },
+    {
+      "name": "Navigation Link",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "Pill-shaped route indicator in the app header. Active state uses the brand gradient.",
+      "html": "<a class=\"ds-nav-link ds-nav-link-active\" href=\"/\">Dashboard</a>",
+      "css": ".ds-nav-link { display: inline-flex; align-items: center; height: 36px; padding: 0 12px; border-radius: 10px; font-size: 13px; font-weight: 600; color: #334155; text-decoration: none; transition: background-color 0.12s cubic-bezier(0.16, 1, 0.3, 1), color 0.12s cubic-bezier(0.16, 1, 0.3, 1); } .ds-nav-link:hover { background: #f1f5f9; color: #0f172a; } .ds-nav-link-active { color: #ffffff !important; background: linear-gradient(135deg, #10b981, #14b8a6 50%, #0891b2) !important; box-shadow: 0 6px 18px -8px rgba(20, 184, 166, 0.5); }"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "refersTo": "chip-filter",
+      "description": "Rounded-pill filter toggle. Active state uses emerald accent with tinted background and border.",
+      "html": "<button class=\"ds-chip ds-chip-active\">Running <span class=\"ds-chip-count\">5</span></button>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 8px; border-radius: 999px; background: transparent; color: #64748b; font-size: 12px; font-weight: 600; border: 1px solid transparent; cursor: pointer; transition: background-color 0.12s, color 0.12s, border-color 0.12s; } .ds-chip:hover { color: #0f172a; } .ds-chip-active { background: rgb(16 185 129 / 0.10); color: #10b981; border-color: rgb(16 185 129 / 0.30); } .ds-chip-count { opacity: 0.7; }"
+    },
+    {
+      "name": "Empty State",
+      "kind": "custom",
+      "refersTo": "empty-state",
+      "description": "Centered placeholder for zero-data states. Title + description + optional action slot.",
+      "html": "<div class=\"ds-empty\"><div class=\"ds-empty-icon\">∅</div><h4 class=\"ds-empty-title\">No containers</h4><p class=\"ds-empty-desc\">No container data available yet.</p></div>",
+      "css": ".ds-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 32px 16px; color: #64748b; } .ds-empty-icon { font-size: 2rem; opacity: 0.4; margin-bottom: 8px; } .ds-empty-title { font-size: 15px; font-weight: 600; color: #0f172a; margin: 0; } .ds-empty-desc { font-size: 13px; max-width: 32ch; margin: 0; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Signal Deck",
+    "overview": "LiveDock is a ship's bridge in miniature. Every surface element carries signal or stays out of the way. The interface is dense enough to diagnose a problem in seconds, calm enough to glance at for hours. It rejects the Grafana model of infinite panels, nested menus, and configuration sprawl. It also rejects the generic Bootstrap admin look — banded table rows, card-grid sameness, 'template' feeling.\n\nThe aesthetic is botanical precision: cool slate neutrals with an emerald-teal-cyan accent that feels alive without shouting. Dark and light themes are equal citizens — neither is an afterthought. The dark theme is meant for 2am incident response in a dim room; the light theme for daytime ops under office fluorescents.",
+    "keyCharacteristics": [
+      "Signal-dense, not information-dense. Empty space is earned.",
+      "Predictable layout — elements never move or surprise on refresh.",
+      "Tactile interactions: hover lifts, focus rings are visible, active states are instant.",
+      "Flat elevation by default. Shadows appear only for popovers and dropdowns."
+    ],
+    "rules": [
+      { "name": "The One Voice Rule", "body": "The emerald accent appears on ≤10% of any given screen. Its rarity is the point — if everything is green, nothing is a signal.", "section": "colors" },
+      { "name": "The Slate Bed Rule", "body": "All neutrals live in the slate hue (approx 210-220°). No pure grays. No warm grays. The cool cast is intentional and consistent across both themes.", "section": "colors" },
+      { "name": "The Mono-for-Data Rule", "body": "Any number, metric, URL, or identifier that the user reads as data (not prose) must use the mono stack.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Surfaces are flat at rest. Shadows appear only as a response to state (hover, popover, modal). A card or container that casts a shadow while idle is wrong.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use the brand gradient exclusively for the single most important action on screen.",
+      "Do use the mono stack for any number, metric, URL, or identifier.",
+      "Do keep spacing generous at the section level (20-32px gaps) while keeping internal density tight (4-12px).",
+      "Do let empty states earn their screen space.",
+      "Do respect prefers-reduced-motion. Skeleton shimmers, view transitions, and hover animations all disable.",
+      "Do use the full 10-stop slate scale. Tinted neutrals only — no pure grays, no warm grays."
+    ],
+    "donts": [
+      "Don't use the emerald accent decoratively. If it's not marking an interactive element or a live signal, remove it.",
+      "Don't use Grafana-style infinite panels, nested menus, or configuration overload.",
+      "Don't use generic Bootstrap patterns: banded table rows, card-grid sameness, 'template' feeling.",
+      "Don't use border-left or border-right greater than 1px as a colored stripe on cards or list items.",
+      "Don't use background-clip: text with a gradient. Emphasis comes from weight or size.",
+      "Don't use glassmorphism or blurs decoratively. Flat terrain by default.",
+      "Don't use hero-metric templates (big number, small label, supporting stats, gradient accent) as a repeated pattern.",
+      "Don't nest cards inside cards. A card is an outer container.",
+      "Don't let elements move or change position on refresh. The layout must be predictable."
+    ]
+  }
+}

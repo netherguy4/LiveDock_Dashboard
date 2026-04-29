@@ -1,9 +1,8 @@
-// Multi-host support. Backend currently returns a single host; the API is
-// shaped as an array so the UI is ready for future multi-host expansion.
-//
-// Add/remove are kept client-side for now (persisted across reloads via
-// pinia-plugin-persistedstate) — once the Go API exposes write endpoints we
-// can flip these actions to PUT/DELETE without changing call-sites.
+// Multi-host support. Hosts are managed client-side (persisted in cookies
+// via pinia-plugin-persistedstate). Add/remove update both localExtras and
+// items; afterHydrate merges them on page load.
+// The /api/hosts endpoint is deprecated — the default host is configured
+// through environment variables on the proxy layer.
 
 import { defineStore } from 'pinia'
 import type { Host } from '~/composables/useApi'
@@ -19,9 +18,7 @@ export const useHostsStore = defineStore('hosts', {
   state: () => ({
     items: [] as LocalHost[],
     activeId: '' as string,
-    loading: false,
-    error: null as string | null,
-    /** Hosts added locally — merged into `items` after `refresh()` */
+    /** Hosts added locally — merged into `items` via afterHydrate */
     localExtras: [] as LocalHost[],
     addDialogOpen: false,
   }),
@@ -33,31 +30,6 @@ export const useHostsStore = defineStore('hosts', {
   },
 
   actions: {
-    async refresh() {
-      this.loading = true
-      try {
-        const remote = (await useApi().hosts()) as LocalHost[]
-        // Mark remote hosts as `online` if status missing — server doesn't
-        // emit it today.
-        const withStatus = remote.map((h) => ({ status: 'online' as const, ...h }))
-        this.items = [...withStatus, ...this.localExtras]
-        if (!this.activeId && this.items.length) {
-          const cur = this.items.find((h) => h.current) ?? this.items[0]
-          this.activeId = cur.id
-        }
-        this.error = null
-      } catch (e: unknown) {
-        this.error = e instanceof Error ? e.message : String(e)
-        if (this.localExtras.length) {
-          this.items = [...this.localExtras]
-          if (!this.activeId) {
-            this.activeId = this.localExtras[0].id
-          }
-        }
-      } finally {
-        this.loading = false
-      }
-    },
     select(id: string) {
       this.activeId = id
     },

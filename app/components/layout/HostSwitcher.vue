@@ -1,7 +1,6 @@
 <script setup lang="ts">
-// Host switcher dropdown — port of new_frontend Hosts.tsx HostSwitcher +
-// AddHostDialog. Source of truth is useHostsStore (loaded from /api/hosts).
-// Local add/remove are persisted via the store (see hosts.store.ts).
+// Host switcher dropdown. Source of truth is useHostsStore — hosts are
+// added/removed client-side and persisted in cookies.
 
 import { onClickOutside } from '@vueuse/core'
 import {

@@ -48,10 +48,10 @@ export const useUiStore = defineStore('ui', {
   },
 
   persist: [
-    { key: STORAGE_KEYS.SIDEBAR_COLLAPSED, pick: ['sidebarCollapsed'] },
-    { key: STORAGE_KEYS.ADVANCED_CHARTS, pick: ['advancedCharts'] },
-    { key: STORAGE_KEYS.CPU_EXPANDED, pick: ['cpuExpanded', 'disksExpanded'] },
-    { key: STORAGE_KEYS.LOGS_AUTOSCROLL, pick: ['logsAutoScroll'] },
-    { key: STORAGE_KEYS.POLLING, pick: ['intervalMs', 'paused'] },
+    { key: STORAGE_KEYS.SIDEBAR_COLLAPSED, pick: ['sidebarCollapsed'], storage: piniaPluginPersistedstate.localStorage() },
+    { key: STORAGE_KEYS.ADVANCED_CHARTS, pick: ['advancedCharts'], storage: piniaPluginPersistedstate.localStorage() },
+    { key: STORAGE_KEYS.CPU_EXPANDED, pick: ['cpuExpanded', 'disksExpanded'], storage: piniaPluginPersistedstate.localStorage() },
+    { key: STORAGE_KEYS.LOGS_AUTOSCROLL, pick: ['logsAutoScroll'], storage: piniaPluginPersistedstate.localStorage() },
+    { key: STORAGE_KEYS.POLLING, pick: ['intervalMs', 'paused'], storage: piniaPluginPersistedstate.localStorage() },
   ],
 })

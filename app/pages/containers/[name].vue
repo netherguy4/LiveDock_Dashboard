@@ -1,13 +1,18 @@
 <script setup lang="ts">
-// Container detail page. The drawer-based logs from the dashboard get a
-// dedicated full-page surface here, locked to this container.
-
 import { Terminal } from 'lucide-vue-next'
 import BaseBadge from '~/components/ui/BaseBadge.vue'
 import ContainerDetail from '~/components/blocks/ContainerDetail.vue'
 import LogsPanel from '~/components/blocks/LogsPanel.vue'
 
-definePageMeta({ layout: 'default' })
+definePageMeta({
+  layout: 'default',
+  middleware: [
+    () => {
+      const hosts = useHostsStore()
+      if (hosts.isEmpty) return navigateTo('/')
+    },
+  ],
+})
 
 const route = useRoute()
 const name = computed(() => decodeURIComponent(String(route.params.name)))
@@ -16,30 +21,56 @@ useHead(() => ({ title: `LiveDock · ${name.value}` }))
 </script>
 
 <template>
-  <div class="cont-page">
-    <ContainerDetail :name="name" />
+  <ClientOnly>
+    <div class="cont-page">
+      <ContainerDetail :name="name" />
 
-    <section class="cont-page__logs">
-      <header class="cont-page__logs-head">
-        <div class="cont-page__logs-title">
-          <Terminal :size="18" />
-          <span>Container logs</span>
-          <BaseBadge tone="success">
-            <span class="cont-page__logs-pulse" /> streaming
-          </BaseBadge>
-          <span class="cont-page__logs-name">{{ name }}</span>
+      <section class="cont-page__logs">
+        <header class="cont-page__logs-head">
+          <div class="cont-page__logs-title">
+            <Terminal :size="18" />
+            <span>Container logs</span>
+            <BaseBadge tone="success">
+              <span class="cont-page__logs-pulse" /> streaming
+            </BaseBadge>
+            <span class="cont-page__logs-name">{{ name }}</span>
+          </div>
+          <div class="cont-page__logs-levels">
+            <BaseBadge>INFO</BaseBadge>
+            <BaseBadge tone="warn">WARN</BaseBadge>
+            <BaseBadge tone="danger">ERROR</BaseBadge>
+          </div>
+        </header>
+        <div class="cont-page__logs-body">
+          <LogsPanel :container-name="name" />
         </div>
-        <div class="cont-page__logs-levels">
-          <BaseBadge>INFO</BaseBadge>
-          <BaseBadge tone="warn">WARN</BaseBadge>
-          <BaseBadge tone="danger">ERROR</BaseBadge>
+      </section>
+    </div>
+    <template #fallback>
+      <div class="cont-page">
+        <div class="cont-page__skeleton">
+          <div class="cont-page__sk-head">
+            <div class="cont-page__sk-avatar" />
+            <div>
+              <div class="cont-page__sk-line cont-page__sk-line--title" />
+              <div class="cont-page__sk-line cont-page__sk-line--sub" />
+            </div>
+          </div>
+          <div class="cont-page__sk-grid">
+            <div v-for="i in 4" :key="i" class="cont-page__sk-card" />
+          </div>
         </div>
-      </header>
-      <div class="cont-page__logs-body">
-        <LogsPanel :container-name="name" />
+        <section class="cont-page__logs">
+          <header class="cont-page__logs-head">
+            <div class="cont-page__logs-title">
+              <div class="cont-page__sk-line cont-page__sk-line--sm" style="width: 100px" />
+            </div>
+          </header>
+          <div class="cont-page__logs-body" />
+        </section>
       </div>
-    </section>
-  </div>
+    </template>
+  </ClientOnly>
 </template>
 
 <style lang="scss" scoped>
@@ -47,6 +78,37 @@ useHead(() => ({ title: `LiveDock · ${name.value}` }))
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+
+  &__skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+  &__sk-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  &__sk-avatar {
+    @include skeleton(40px, 40px);
+    border-radius: var(--radius-lg);
+  }
+  &__sk-line {
+    @include skeleton(12px, 100%);
+    border-radius: var(--radius-md);
+    &--title { width: 180px; height: 22px; }
+    &--sub { width: 260px; margin-top: var(--space-1); }
+  }
+  &__sk-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
+    @include until($bp-md) { grid-template-columns: repeat(2, 1fr); }
+  }
+  &__sk-card {
+    @include skeleton(152px, 100%);
+    border-radius: var(--radius-xl);
+  }
 
   &__logs {
     background: var(--color-card);

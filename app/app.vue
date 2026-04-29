@@ -19,23 +19,11 @@ const logs = useLogsStore()
 
 const polling = computed(() => route.path !== '/login' && !ui.paused)
 
-// Bootstrap: load hosts first, then the rest only if a host is reachable.
-// `useAsyncData` blocks SSR until data arrives — the dashboard renders with
-// real data on the server, no skeleton flash.
-await useAsyncData('bootstrap', async () => {
-  await hosts.refresh()
-  if (hosts.isEmpty) return
-  await Promise.allSettled([
-    metrics.refreshSnapshot(),
-    metrics.refreshHistory(),
-    requests.refresh(),
-  ])
-})
-
+// Client is the single source of truth for hosts — localStorage supplies
+// localExtras, afterHydrate merges them into items, and the watcher below
+// kicks off data loading once hosts are available.
 let baseTimer: ReturnType<typeof setInterval> | null = null
 let tickN = 0
-
-ui.booted = true
 
 function stop() {
   if (baseTimer) {
@@ -59,25 +47,26 @@ function runTick() {
   if (logs.activeId) void logs.refreshActive()
   if (tickN % POLLING.HISTORY_EVERY === 0) void metrics.refreshHistory()
   if (tickN % POLLING.REQUESTS_EVERY === 0) void requests.refresh()
-  if (tickN % 60 === 0) {
-    void hosts.refresh()
-  }
 }
 
 watch([() => ui.intervalMs, polling], start, { immediate: false })
 
-// When the first host appears, kick off a full data load immediately
-// instead of waiting for the next scheduled tick.
-watch(() => hosts.isEmpty, (empty) => {
-  if (!empty) {
+// Load data when hosts exist and we're past the login page.
+// /login guard prevents 401s — all API calls would fail during auth.
+watch(
+  () => [hosts.isEmpty, route.path] as const,
+  ([empty, path]) => {
+    tickN = 0
+    if (empty || path === '/login') return
     void metrics.refreshSnapshot()
     void metrics.refreshHistory()
     void requests.refresh()
-    tickN = 1
-  }
-})
+  },
+  { immediate: true },
+)
 
 onMounted(() => {
+  ui.booted = true
   tickN = 0
   start()
 })

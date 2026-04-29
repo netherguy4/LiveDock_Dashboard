@@ -103,9 +103,8 @@ useHead({ title: 'LiveDock · Dashboard' })
     @media (max-width: 480px) { grid-template-columns: 1fr; }
   }
   &__skeleton-block {
-    background: var(--color-muted);
+    @include skeleton;
     border-radius: var(--radius-lg);
-    animation: skeleton-pulse 2s ease-in-out infinite;
     min-width: 0;
   }
 
@@ -165,7 +164,7 @@ useHead({ title: 'LiveDock · Dashboard' })
     gap: var(--space-2);
     border: 0;
     border-radius: var(--radius-lg);
-    background: linear-gradient(135deg, var(--emerald-500), var(--cyan-600));
+    background: linear-gradient(135deg, var(--emerald-500), var(--teal-500) 50%, var(--cyan-600));
     color: #ffffff;
     font-size: var(--fs-h3);
     font-weight: var(--fw-semibold);
@@ -180,10 +179,5 @@ useHead({ title: 'LiveDock · Dashboard' })
       outline-offset: 3px;
     }
   }
-}
-
-@keyframes skeleton-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
 }
 </style>

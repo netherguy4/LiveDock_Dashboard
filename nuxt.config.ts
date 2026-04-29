@@ -12,7 +12,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   ssr: true,
 
-  modules: ["@pinia/nuxt", "@vueuse/nuxt", "@nuxt/eslint"],
+  modules: ["@pinia/nuxt", "pinia-plugin-persistedstate/nuxt", "@vueuse/nuxt", "@nuxt/eslint"],
 
   components: [{ path: "~/components", pathPrefix: false }],
 

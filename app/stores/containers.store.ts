@@ -106,5 +106,6 @@ export const useContainersStore = defineStore('containers', {
   persist: {
     key: STORAGE_KEYS.CONTAINERS_FILTER,
     pick: ['search', 'statusFilter', 'sortKey', 'sortDir'],
+    storage: piniaPluginPersistedstate.localStorage(),
   },
 })

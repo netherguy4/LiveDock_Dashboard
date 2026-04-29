@@ -1,5 +1,5 @@
 // Validates a host URL before the client adds it. The browser sends { url, token? }
-// and we try a quick GET to the upstream's /api/hosts. Returns { ok: true } or
+// and we try a quick GET to the upstream's /api/snapshot. Returns { ok: true } or
 // { ok: false, error } so the UI can surface a meaningful message.
 export default defineEventHandler(async (event) => {
   const body = await readBody<{ url: string; token?: string }>(event)
@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
     const headers: Record<string, string> = {}
     if (body.token) headers.Authorization = `Bearer ${body.token}`
 
-    await $fetch(`${baseUrl}/api/hosts`, {
+    await $fetch(`${baseUrl}/api/snapshot`, {
       method: 'GET',
       headers,
       timeout: 8000,
