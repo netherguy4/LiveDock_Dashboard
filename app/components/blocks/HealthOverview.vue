@@ -24,7 +24,7 @@ const totalCt = computed(() => containers.counts.total)
 </script>
 
 <template>
-  <section class="health" aria-labelledby="health-heading">
+  <section class="health" aria-labelledby="health-heading" :aria-busy="loading ? true : undefined">
     <header class="health__head">
       <h2 id="health-heading" class="health__title">
         <ShieldCheck :size="18" class="health__title-icon" />
@@ -37,7 +37,7 @@ const totalCt = computed(() => containers.counts.total)
     </header>
 
     <template v-if="loading">
-      <div class="health__rows">
+      <div class="health__rows" aria-hidden="true">
         <div v-for="i in 3" :key="i" class="health__row">
           <div class="health__row-head">
             <div class="health__skeleton-label" />

@@ -48,7 +48,7 @@ useHead(() => ({ title: `LiveDock · ${name.value}` }))
     </div>
     <template #fallback>
       <div class="cont-page">
-        <div class="cont-page__skeleton">
+        <div class="cont-page__skeleton" aria-hidden="true">
           <div class="cont-page__sk-head">
             <div class="cont-page__sk-avatar" />
             <div>

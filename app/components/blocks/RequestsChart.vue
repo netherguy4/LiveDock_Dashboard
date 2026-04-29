@@ -15,6 +15,8 @@ const error = computed(() => !reqs.points.length && reqs.error)
 
 const BUCKETS = 12
 
+const SKELETON_BAR_HEIGHTS = [30, 55, 42, 70, 35, 60, 48, 75, 40, 65, 50, 80]
+
 const buckets = computed<number[]>(() => {
   const pts = reqs.points
   if (!pts.length) return []
@@ -39,13 +41,13 @@ function heightPct(v: number): number {
 </script>
 
 <template>
-  <section class="requests">
+  <section class="requests" :aria-busy="loading ? true : undefined">
     <header class="requests__head">
       <div class="requests__title">
         <Activity :size="18" class="requests__icon" />
         <div>
           <div class="requests__h">API requests</div>
-          <div v-if="loading" class="requests__skeleton-sub" />
+          <div v-if="loading" class="requests__skeleton-sub" aria-hidden="true" />
           <div v-else-if="error" class="requests__err">Failed to load request data</div>
           <div v-else class="requests__sub">
             Last 12h · avg {{ reqs.perMin.toFixed(1) }}/min · total {{ reqs.total }}
@@ -57,12 +59,12 @@ function heightPct(v: number): number {
 
     <div class="requests__chart">
       <template v-if="loading">
-        <div class="requests__skeleton-bars">
+        <div class="requests__skeleton-bars" aria-hidden="true">
           <div
             v-for="i in 12"
             :key="i"
             class="requests__skeleton-bar"
-            :style="{ height: `${20 + Math.random() * 80}%` }"
+            :style="{ height: `${SKELETON_BAR_HEIGHTS[i - 1]}%` }"
           />
         </div>
       </template>

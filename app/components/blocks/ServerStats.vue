@@ -62,7 +62,7 @@ function diskClass(used: number) {
 </script>
 
 <template>
-  <div class="server-stats">
+  <div class="server-stats" :aria-busy="loading ? true : undefined">
     <!-- Error banner -->
     <div v-if="error && !loading" class="server-stats__error" role="alert">
       Failed to load metrics. Retrying…
@@ -130,7 +130,7 @@ function diskClass(used: number) {
         </div>
       </div>
       <template v-if="loading">
-        <div class="server-stats__cores">
+        <div class="server-stats__cores" aria-hidden="true">
           <div v-for="i in 4" :key="i" class="core-bar">
             <div class="core-bar__head">
               <div class="core-bar__skeleton-name" />
@@ -169,7 +169,7 @@ function diskClass(used: number) {
         </div>
       </div>
       <template v-if="loading || !disks.length">
-        <div class="server-stats__disk-scroll">
+        <div class="server-stats__disk-scroll" aria-hidden="true">
           <div class="disk-table">
             <div v-for="i in 3" :key="i" class="disk-row skeleton-disk-row">
               <div class="disk-row__skeleton-device" />

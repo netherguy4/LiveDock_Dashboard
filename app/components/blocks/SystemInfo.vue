@@ -72,7 +72,7 @@ const items = computed(() => [
 </script>
 
 <template>
-  <section class="system-info">
+  <section class="system-info" :aria-busy="loading ? true : undefined">
     <header class="system-info__head">
       <div class="system-info__brand">
         <div class="system-info__icon" :class="{ 'system-info__icon--loading': loading }">
@@ -80,8 +80,8 @@ const items = computed(() => [
         </div>
         <div class="system-info__titles">
           <template v-if="loading">
-            <div class="system-info__skeleton-title" />
-            <div class="system-info__skeleton-sub" />
+            <div class="system-info__skeleton-title" aria-hidden="true" />
+            <div class="system-info__skeleton-sub" aria-hidden="true" />
           </template>
           <template v-else>
             <div class="system-info__title">
@@ -97,8 +97,8 @@ const items = computed(() => [
       <div class="system-info__status">
         <div class="system-info__uptime">
           <template v-if="loading">
-            <div class="system-info__skeleton-uptime-label" />
-            <div class="system-info__skeleton-uptime-value" />
+            <div class="system-info__skeleton-uptime-label" aria-hidden="true" />
+            <div class="system-info__skeleton-uptime-value" aria-hidden="true" />
           </template>
           <template v-else>
             <div class="system-info__uptime-label">Uptime</div>
@@ -108,7 +108,7 @@ const items = computed(() => [
         <BaseBadge v-if="!loading" tone="success">
           <Activity :size="12" /> healthy
         </BaseBadge>
-        <div v-else class="system-info__skeleton-badge" />
+        <div v-else class="system-info__skeleton-badge" aria-hidden="true" />
       </div>
     </header>
 
@@ -120,7 +120,7 @@ const items = computed(() => [
     <template v-else>
       <div class="system-info__grid">
         <template v-if="loading">
-          <div v-for="i in 8" :key="i" class="system-info__item">
+          <div v-for="i in 8" :key="i" class="system-info__item" aria-hidden="true">
             <div class="system-info__skeleton-chip" />
             <div class="system-info__meta">
               <div class="system-info__skeleton-meta-label" />

@@ -17,9 +17,9 @@ useHead({ title: 'LiveDock · Dashboard' })
 </script>
 
 <template>
-  <div class="dashboard">
+  <div class="dashboard" :aria-busy="!ui.booted ? true : undefined">
     <template v-if="!ui.booted">
-      <div class="dashboard__skeleton">
+      <div class="dashboard__skeleton" aria-hidden="true">
         <div class="dashboard__skeleton-row">
           <div class="dashboard__skeleton-block" style="height: 56px" />
           <div class="dashboard__skeleton-block" style="width: 200px; height: 36px" />

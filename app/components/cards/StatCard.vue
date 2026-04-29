@@ -74,8 +74,9 @@ const trendTone = computed<'success' | 'warn'>(() =>
 </script>
 
 <template>
-  <article class="stat-card" :class="`stat-card--${computedTone}`">
+  <article class="stat-card" :class="`stat-card--${computedTone}`" :aria-busy="loading ? true : undefined">
     <template v-if="loading">
+      <div aria-hidden="true">
       <div class="stat-card__head">
         <div class="stat-card__skeleton-icon" />
         <div class="stat-card__skeleton-label" />
@@ -83,6 +84,7 @@ const trendTone = computed<'success' | 'warn'>(() =>
       <div class="stat-card__skeleton-value" />
       <div class="stat-card__skeleton-sub" />
       <div class="stat-card__skeleton-spark" />
+      </div>
     </template>
     <template v-else>
       <div class="stat-card__head">
@@ -185,10 +187,10 @@ const trendTone = computed<'success' | 'warn'>(() =>
     border-radius: var(--radius-md);
   }
   &__skeleton-label {
-    @include skeleton(14px, 64px);
+    @include skeleton(13px, 64px);
   }
   &__skeleton-value {
-    @include skeleton(32px, 120px);
+    @include skeleton(28px, 120px);
   }
   &__skeleton-sub {
     @include skeleton(12px, 80px);

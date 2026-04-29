@@ -22,7 +22,7 @@ useHead({ title: 'LiveDock · Containers' })
     <ClientOnly>
       <ContainersPanel />
       <template #fallback>
-        <div class="containers-page__skeleton">
+        <div class="containers-page__skeleton" aria-hidden="true">
           <div v-for="i in 5" :key="i" class="containers-page__skeleton-row">
             <div class="containers-page__sk-col containers-page__sk-col--lg" />
             <div class="containers-page__sk-col containers-page__sk-col--md" />

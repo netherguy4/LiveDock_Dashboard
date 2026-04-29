@@ -74,7 +74,7 @@ watch(
 </script>
 
 <template>
-  <section class="containers-panel">
+  <section class="containers-panel" :aria-busy="loading ? true : undefined">
     <header class="containers-panel__head">
       <div class="containers-panel__title">
         <Box :size="20" />
@@ -185,7 +185,7 @@ watch(
         </div>
 
         <template v-if="loading">
-          <div v-for="i in 5" :key="i" class="containers-panel__skeleton-row">
+          <div v-for="i in 5" :key="i" class="containers-panel__skeleton-row" aria-hidden="true">
             <div class="containers-panel__skeleton-cell containers-panel__skeleton-cell--lg" />
             <div class="containers-panel__skeleton-cell containers-panel__skeleton-cell--md" />
             <div class="containers-panel__skeleton-cell containers-panel__skeleton-cell--sm" />
