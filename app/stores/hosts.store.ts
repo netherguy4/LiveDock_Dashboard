@@ -23,11 +23,13 @@ export const useHostsStore = defineStore('hosts', {
     error: null as string | null,
     /** Hosts added locally — merged into `items` after `refresh()` */
     localExtras: [] as LocalHost[],
+    addDialogOpen: false,
   }),
 
   getters: {
     active: (s) => s.items.find((h) => h.id === s.activeId) ?? s.items[0] ?? null,
     hasMany: (s) => s.items.length > 1,
+    isEmpty: (s) => s.items.length === 0,
   },
 
   actions: {
@@ -73,6 +75,9 @@ export const useHostsStore = defineStore('hosts', {
       if (this.activeId === id) {
         this.activeId = this.items[0]?.id ?? ''
       }
+    },
+    setAddDialogOpen(v: boolean) {
+      this.addDialogOpen = v
     },
   },
 

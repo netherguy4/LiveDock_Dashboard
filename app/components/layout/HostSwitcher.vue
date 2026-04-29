@@ -12,7 +12,6 @@ import { useHostsStore } from '~/stores/hosts.store'
 
 const hosts = useHostsStore()
 const open = ref(false)
-const showAdd = ref(false)
 const root = ref<HTMLElement | null>(null)
 
 onClickOutside(root, () => { open.value = false })
@@ -39,10 +38,10 @@ function submitAdd() {
     token: draft.token.trim() || undefined,
   })
   resetDraft()
-  showAdd.value = false
+    hosts.setAddDialogOpen(false)
 }
 
-watch(showAdd, (v) => {
+watch(() => hosts.addDialogOpen, (v) => {
   if (typeof document === 'undefined') return
   document.body.style.overflow = v ? 'hidden' : ''
 })
@@ -113,7 +112,7 @@ watch(showAdd, (v) => {
         <button
           type="button"
           class="host-switcher__add"
-          @click="showAdd = true; open = false"
+          @click="hosts.setAddDialogOpen(true); open = false"
         >
           <Plus :size="16" />
           <span>Add new host</span>
@@ -125,9 +124,9 @@ watch(showAdd, (v) => {
     <Teleport to="body">
       <Transition name="modal">
         <div
-          v-if="showAdd"
+          v-if="hosts.addDialogOpen"
           class="host-modal"
-          @click.self="showAdd = false"
+          @click.self="hosts.setAddDialogOpen(false)"
         >
           <div class="host-modal__card" @click.stop>
             <div class="host-modal__head">
@@ -135,7 +134,7 @@ watch(showAdd, (v) => {
                 <Plus :size="16" />
                 Add API host
               </span>
-              <button type="button" class="host-modal__close" @click="showAdd = false">
+              <button type="button" class="host-modal__close" @click="hosts.setAddDialogOpen(false)">
                 <X :size="16" />
               </button>
             </div>
@@ -180,7 +179,7 @@ watch(showAdd, (v) => {
               </label>
 
               <div class="host-modal__actions">
-                <button type="button" class="host-modal__cancel" @click="showAdd = false">Cancel</button>
+                <button type="button" class="host-modal__cancel" @click="hosts.setAddDialogOpen(false)">Cancel</button>
                 <button
                   type="submit"
                   class="host-modal__submit"

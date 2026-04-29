@@ -21,7 +21,7 @@ const router = useRouter()
 const submitting = ref(false)
 const submitError = ref('')
 const showPwd = ref(false)
-const logoHover = ref(false)
+const lit = ref(1)
 
 const { handleSubmit, errors } = useForm({
   validationSchema: toTypedSchema(loginSchema),
@@ -74,16 +74,19 @@ function onMouseMove(e: MouseEvent) {
 </script>
 
 <template>
-  <div ref="rootRef" class="login-screen" @mousemove="onMouseMove">
+  <div
+    ref="rootRef"
+    class="login-screen"
+    :style="{ '--lit': lit }"
+    @mousemove="onMouseMove"
+    @mouseenter="lit = 1"
+    @mouseleave="lit = 0"
+  >
     <LoginGridOverlay />
 
     <div class="login-screen__inner">
-      <div
-        class="login-screen__logo"
-        @mouseenter="logoHover = true"
-        @mouseleave="logoHover = false"
-      >
-        <Logo layout="stacked" size="lg" :pulse="logoHover" />
+      <div class="login-screen__logo">
+        <Logo layout="stacked" size="lg" />
       </div>
 
       <form ref="formRef" class="login-card" @submit.prevent="onSubmit">
@@ -219,6 +222,8 @@ function onMouseMove(e: MouseEvent) {
             mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
             mask-composite: exclude;
     pointer-events: none;
+    opacity: var(--lit, 1);
+    transition: opacity 600ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   &__head { margin-bottom: var(--space-6); }
@@ -274,6 +279,8 @@ function onMouseMove(e: MouseEvent) {
             mask-composite: exclude;
     pointer-events: none;
     z-index: 2;
+    opacity: var(--lit, 1);
+    transition: opacity 600ms cubic-bezier(0.22, 1, 0.36, 1);
   }
   &__icon {
     position: absolute;
@@ -374,5 +381,41 @@ function onMouseMove(e: MouseEvent) {
 
 @keyframes login-spin {
   to { transform: rotate(360deg); }
+}
+</style>
+
+<style lang="scss">
+/* @property registration must be unscoped — Vue scoped styles can't host it.
+   --lit is a plain custom property (0/1 toggle); opacity transition on each
+   layer carries the fade. Transitioning a registered property directly via
+   var() chains is unreliable in Chromium. */
+@property --mx {
+  syntax: '<length-percentage>';
+  inherits: true;
+  initial-value: 50%;
+}
+@property --my {
+  syntax: '<length-percentage>';
+  inherits: true;
+  initial-value: 50%;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .login-screen {
+    --lit: 1;
+    animation: login-orbit 18s linear infinite;
+  }
+}
+
+@keyframes login-orbit {
+  0%   { --mx: 30%; --my: 38%; }
+  25%  { --mx: 72%; --my: 30%; }
+  50%  { --mx: 76%; --my: 68%; }
+  75%  { --mx: 28%; --my: 72%; }
+  100% { --mx: 30%; --my: 38%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-screen { animation: none; }
 }
 </style>

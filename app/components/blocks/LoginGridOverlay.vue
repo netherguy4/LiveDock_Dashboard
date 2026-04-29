@@ -51,12 +51,30 @@
     background-size: 40px 40px;
   }
 
+  &__mid,
+  &__hot,
+  &__wash,
+  &__halo,
+  &__core,
+  &__spark {
+    transition: opacity 600ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &__mid,
+    &__hot,
+    &__wash,
+    &__halo,
+    &__core,
+    &__spark { transition: none; }
+  }
+
   &__base {
     opacity: 0.05;
   }
 
   &__mid {
-    opacity: 0.15;
+    opacity: calc(0.15 * var(--lit, 1));
     mix-blend-mode: screen;
     -webkit-mask-image: radial-gradient(
       circle,
@@ -85,7 +103,7 @@
   }
 
   &__hot {
-    opacity: 0.20;
+    opacity: calc(0.20 * var(--lit, 1));
     mix-blend-mode: screen;
     -webkit-mask-image: radial-gradient(
       circle,
@@ -131,6 +149,7 @@
       rgba(16, 185, 129, 0.03) 50%,
       transparent 80%
     );
+    opacity: var(--lit, 1);
   }
   &__halo {
     width: 440px;
@@ -144,6 +163,7 @@
     );
     mix-blend-mode: screen;
     filter: blur(8px);
+    opacity: var(--lit, 1);
   }
   &__core {
     width: 140px;
@@ -157,6 +177,7 @@
     );
     mix-blend-mode: screen;
     filter: blur(4px);
+    opacity: var(--lit, 1);
   }
   &__spark {
     width: 40px;
@@ -167,6 +188,12 @@
       transparent 75%
     );
     mix-blend-mode: screen;
+    opacity: var(--lit, 1);
+  }
+
+  @media (hover: none) and (pointer: coarse) {
+    &__mid,
+    &__hot { display: none; }
   }
 }
 </style>

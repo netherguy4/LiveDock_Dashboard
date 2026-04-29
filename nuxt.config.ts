@@ -19,7 +19,7 @@ export default defineNuxtConfig({
   css: ["~/assets/styles/base/base.scss"],
 
   runtimeConfig: {
-    apiUrl: process.env.BACKEND_URL || "https://api.nether.pp.ua",
+    apiUrl: process.env.BACKEND_URL || "",
     apiToken: process.env.API_TOKEN || "",
     login: process.env.LOGIN || "admin",
     password: process.env.PASSWORD || "",
@@ -33,6 +33,9 @@ export default defineNuxtConfig({
     viewTransition: true,
     head: {
       title: "Monitoring",
+      link: [
+        { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+      ],
       script: [
         {
           // Must run before first paint — reads localStorage and sets the
