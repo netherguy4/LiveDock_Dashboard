@@ -88,8 +88,6 @@ export type Host = {
   current: boolean
 }
 
-export type TunnelMap = Record<string, string[]>
-
 // hostHeaders attaches the active host's URL/token to a proxied request so the
 // Nuxt server can route to the right backend. Empty for the default host —
 // the server falls back to BACKEND_URL/API_TOKEN.
@@ -137,7 +135,5 @@ export const useApi = () => {
         method: 'POST',
         body: { url, token },
       }),
-    tunnels: () =>
-      $fetch<TunnelMap>('/api/tunnels', { headers: headers() }).catch(() => ({}) as TunnelMap),
   }
 }

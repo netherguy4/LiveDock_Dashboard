@@ -17,6 +17,7 @@ export const useUiStore = defineStore('ui', {
     paused: false,
     logsDrawerOpen: false,
     mobileNavOpen: false,
+    booted: false,
   }),
 
   actions: {

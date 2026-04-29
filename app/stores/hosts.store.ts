@@ -88,6 +88,20 @@ export const useHostsStore = defineStore('hosts', {
   },
 
   persist: [
-    { key: STORAGE_KEYS.HOSTS_LOCAL, pick: ['localExtras', 'activeId'] },
+    {
+      key: STORAGE_KEYS.HOSTS_LOCAL,
+      pick: ['localExtras', 'activeId'],
+      afterHydrate({ store }) {
+        const s = store as ReturnType<typeof useHostsStore>
+        if (!s.localExtras.length) return
+        const ids = new Set(s.items.map((i) => i.id))
+        for (const h of s.localExtras) {
+          if (!ids.has(h.id)) s.items.push(h)
+        }
+        if (!s.activeId || !s.items.find((i) => i.id === s.activeId)) {
+          s.activeId = s.localExtras[0].id
+        }
+      },
+    },
   ],
 })

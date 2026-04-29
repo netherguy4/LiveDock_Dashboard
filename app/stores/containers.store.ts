@@ -5,7 +5,7 @@
 import { defineStore } from 'pinia'
 import { normalizeContainerState, type ContainerStatus } from '~/constants/status'
 import { STORAGE_KEYS } from '~/constants/storage-keys'
-import type { ContainerAction, ContainerRow, TunnelMap } from '~/composables/useApi'
+import type { ContainerAction, ContainerRow } from '~/composables/useApi'
 
 type SortKey = 'name' | 'status' | 'cpu' | 'mem'
 type SortDir = 'asc' | 'desc'
@@ -13,7 +13,6 @@ type SortDir = 'asc' | 'desc'
 export const useContainersStore = defineStore('containers', {
   state: () => ({
     items: [] as ContainerRow[],
-    tunnels: {} as TunnelMap,
     loading: false,
     error: null as string | null,
     // UI prefs (persisted)
@@ -65,8 +64,6 @@ export const useContainersStore = defineStore('containers', {
 
     byName: (s) => (name: string) =>
       s.items.find((c) => c.name === name || c.id === name) ?? null,
-
-    tunnelsFor: (s) => (name: string) => s.tunnels[name] ?? [],
   },
 
   actions: {
@@ -84,9 +81,6 @@ export const useContainersStore = defineStore('containers', {
       } finally {
         this.loading = false
       }
-    },
-    async refreshTunnels() {
-      this.tunnels = await useApi().tunnels()
     },
 
     async runAction(id: string, action: ContainerAction) {

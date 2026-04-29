@@ -1,14 +1,4 @@
 <script setup lang="ts">
-// Main dashboard. Composes blocks; data flows from Pinia stores; polling
-// is driven globally from app.vue, so this page just renders.
-//
-// Layout matches new_frontend HomePage exactly:
-//   1. SystemInfo
-//   2. ChartSettingsBar (refresh / pause / show-all toggles)
-//   3. ServerStats (4 stat cards + optional per-core / per-volume panels)
-//   4. 3-col row: RequestsChart (lg col-span 2) + HealthOverview (1)
-//   5. ContainersPanel
-
 import { Plus, Server } from 'lucide-vue-next'
 import ChartSettingsBar from '~/components/layout/ChartSettingsBar.vue'
 import ContainersPanel from '~/components/blocks/ContainersPanel.vue'
@@ -17,8 +7,10 @@ import RequestsChart from '~/components/blocks/RequestsChart.vue'
 import ServerStats from '~/components/blocks/ServerStats.vue'
 import SystemInfo from '~/components/blocks/SystemInfo.vue'
 import { useHostsStore } from '~/stores/hosts.store'
+import { useUiStore } from '~/stores/ui.store'
 
 const hosts = useHostsStore()
+const ui = useUiStore()
 
 definePageMeta({ layout: 'default' })
 useHead({ title: 'LiveDock · Dashboard' })
@@ -26,7 +18,29 @@ useHead({ title: 'LiveDock · Dashboard' })
 
 <template>
   <div class="dashboard">
-    <template v-if="hosts.isEmpty && !hosts.loading">
+    <template v-if="!ui.booted">
+      <div class="dashboard__skeleton">
+        <div class="dashboard__skeleton-row">
+          <div class="dashboard__skeleton-block" style="height: 56px" />
+          <div class="dashboard__skeleton-block" style="width: 200px; height: 36px" />
+        </div>
+        <div class="dashboard__skeleton-row">
+          <div class="dashboard__skeleton-block" style="height: 40px; flex: 1" />
+          <div class="dashboard__skeleton-block" style="width: 180px; height: 40px" />
+        </div>
+        <div class="dashboard__skeleton-grid">
+          <div class="dashboard__skeleton-block" style="height: 152px" />
+          <div class="dashboard__skeleton-block" style="height: 152px" />
+          <div class="dashboard__skeleton-block" style="height: 152px" />
+          <div class="dashboard__skeleton-block" style="height: 152px" />
+        </div>
+        <div class="dashboard__skeleton-row">
+          <div class="dashboard__skeleton-block" style="flex: 2; height: 240px" />
+          <div class="dashboard__skeleton-block" style="flex: 1; height: 240px" />
+        </div>
+      </div>
+    </template>
+    <template v-else-if="hosts.isEmpty && !hosts.loading">
       <div class="dashboard__empty">
         <div class="dashboard__empty-icon">
           <Server :size="48" />
@@ -68,6 +82,32 @@ useHead({ title: 'LiveDock · Dashboard' })
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+
+  &__skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    width: 100%;
+  }
+  &__skeleton-row {
+    display: flex;
+    gap: var(--space-4);
+    align-items: center;
+  }
+  &__skeleton-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
+
+    @include until($bp-md) { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 480px) { grid-template-columns: 1fr; }
+  }
+  &__skeleton-block {
+    background: var(--color-muted);
+    border-radius: var(--radius-lg);
+    animation: skeleton-pulse 2s ease-in-out infinite;
+    min-width: 0;
+  }
 
   &__throughput {
     display: grid;
@@ -140,5 +180,10 @@ useHead({ title: 'LiveDock · Dashboard' })
       outline-offset: 3px;
     }
   }
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
 }
 </style>

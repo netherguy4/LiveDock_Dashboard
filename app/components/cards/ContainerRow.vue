@@ -3,7 +3,7 @@
 // (App.tsx). Click navigates to the container detail page; action buttons
 // stop propagation. Layout matches the parent panel's grid header.
 
-import { Play, Square, RotateCw, ExternalLink } from 'lucide-vue-next'
+import { Play, Square, RotateCw } from 'lucide-vue-next'
 import BaseBadge from '~/components/ui/BaseBadge.vue'
 import StatusDot from '~/components/common/StatusDot.vue'
 import { ROUTES } from '~/configs/routes.config'
@@ -13,11 +13,9 @@ import type { ContainerRow as ContainerRowType, ContainerAction } from '~/compos
 
 interface Props {
   container: ContainerRowType
-  tunnels?: string[]
   pendingAction?: ContainerAction | null
 }
 const props = withDefaults(defineProps<Props>(), {
-  tunnels: () => [],
   pendingAction: null,
 })
 const emit = defineEmits<{ action: [id: string, action: ContainerAction] }>()
@@ -62,18 +60,6 @@ function trigger(e: Event, action: ContainerAction) {
         <span class="cont-row__title">{{ container.name }}</span>
         <span class="cont-row__image">{{ container.image }}</span>
       </div>
-      <a
-        v-for="t in tunnels"
-        :key="t"
-        :href="`https://${t}`"
-        target="_blank"
-        rel="noopener"
-        class="cont-row__tunnel"
-        :title="`Open ${t}`"
-        @click.stop
-      >
-        <ExternalLink :size="12" />
-      </a>
     </div>
 
     <div class="cont-row__cell">
@@ -153,12 +139,6 @@ function trigger(e: Event, action: ContainerAction) {
     font-size: 12px;
     color: var(--color-subtle-foreground);
     @include truncate;
-  }
-  &__tunnel {
-    display: inline-flex;
-    align-items: center;
-    color: var(--color-muted-foreground);
-    &:hover { color: var(--emerald-500); }
   }
 
   &__cell {

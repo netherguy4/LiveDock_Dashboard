@@ -28,8 +28,6 @@ const tone = computed<'success' | 'warn' | 'neutral'>(() => {
 })
 const isStopped = computed(() => status.value === CONTAINER_STATUS.STOPPED)
 
-const tunnels = computed(() => (c.value ? containers.tunnelsFor(c.value.name) : []))
-
 const portStr = computed(() => {
   const ps = c.value?.ports ?? []
   if (!ps.length) return '—'
@@ -156,18 +154,6 @@ function spark(val: number, salt: string): number[] {
         palette="disk"
       />
     </div>
-
-    <div v-if="tunnels.length" class="cont-detail__tunnels">
-      <span class="cont-detail__tunnels-label">Tunnels</span>
-      <a
-        v-for="t in tunnels"
-        :key="t"
-        :href="`https://${t}`"
-        target="_blank"
-        rel="noopener"
-        class="cont-detail__tunnel"
-      >{{ t }}</a>
-    </div>
   </div>
 
   <div v-else class="cont-detail__empty">
@@ -287,30 +273,6 @@ function spark(val: number, salt: string): number[] {
 
     @include from($bp-sm) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     @include from($bp-lg) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  }
-
-  &__tunnels {
-    display: inline-flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-3) var(--space-4);
-    background: var(--color-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-  }
-  &__tunnels-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--color-muted-foreground);
-  }
-  &__tunnel {
-    color: var(--emerald-500);
-    font-family: $font-stack-mono;
-    font-size: 12px;
-    text-decoration: none;
-    &:hover { text-decoration: underline; }
   }
 
   &__empty {

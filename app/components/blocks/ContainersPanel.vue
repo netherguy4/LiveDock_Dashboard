@@ -2,7 +2,7 @@
 // Containers panel — port of new_frontend ContainersPanel (App.tsx).
 // Search input + filter chips + sort header + per-row card.
 //
-// Source: useContainersStore (driven by snapshot.containers + tunnels API).
+// Source: useContainersStore (driven by snapshot.containers).
 
 import {
   Box, Search, X, Filter, ArrowUp, ArrowDown, ArrowUpDown, ScrollText,
@@ -209,7 +209,6 @@ watch(
             v-for="c in containers.filtered"
             :key="c.id"
             :container="c"
-            :tunnels="containers.tunnelsFor(c.name)"
             :pending-action="containers.pending[c.id] ?? null"
             @action="onAction"
           />
