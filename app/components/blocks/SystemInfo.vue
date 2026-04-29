@@ -1,11 +1,4 @@
 <script setup lang="ts">
-// SystemInfo card — port of new_frontend SystemInfoInner.
-// Source data: useMetricsStore.snapshot.host (real Go API).
-//
-// "uptime" is presented as a live counter — base value comes from the API
-// (uptime_seconds), then we tick locally each second so the display feels
-// alive between snapshots.
-
 import {
   Server, Globe, MonitorCog, GitBranch, Container, Layers, Cpu, MemoryStick, Activity,
 } from 'lucide-vue-next'
@@ -23,15 +16,25 @@ const host = computed(() => metrics.snapshot?.host ?? null)
 const loading = computed(() => !metrics.snapshot && metrics.loading)
 const error = computed(() => metrics.error)
 
-// Live uptime — base from API, plus a local tick so the seconds field moves
-// between snapshots. Pause the local clock when ui.paused is set.
 const tick = ref(0)
-const baseAt = ref({ at: 0, seconds: 0 })
+const serverBootMs = ref(0)
+const downtimeAt = ref<number | null>(null)
 let timer: ReturnType<typeof setInterval> | null = null
 
 watch(() => host.value?.uptime_seconds, (v) => {
-  if (v == null) return
-  baseAt.value = { at: Date.now(), seconds: v }
+  if (v == null) {
+    if (serverBootMs.value > 0 && downtimeAt.value == null) {
+      downtimeAt.value = Date.now()
+    }
+    return
+  }
+  downtimeAt.value = null
+  const newBootMs = Date.now() - v * 1000
+  if (serverBootMs.value === 0) {
+    serverBootMs.value = newBootMs
+  } else if (newBootMs > serverBootMs.value + 5000) {
+    serverBootMs.value = newBootMs
+  }
 }, { immediate: true })
 
 onMounted(() => {
@@ -42,16 +45,15 @@ onMounted(() => {
 onUnmounted(() => { if (timer) clearInterval(timer) })
 
 const liveUptime = computed(() => {
-  if (!host.value) return '—'
-  // tick.value used purely to keep this computed reactive
+  if (serverBootMs.value === 0) return '—'
   void tick.value
-  const elapsed = (Date.now() - baseAt.value.at) / 1000
-  return formatUptime(baseAt.value.seconds + elapsed)
+  const seconds = Math.floor((Date.now() - serverBootMs.value) / 1000)
+  return seconds > 0 ? formatUptime(seconds) : '—'
 })
 
 const bootDate = computed(() => {
-  if (!host.value?.uptime_seconds) return ''
-  return new Date(Date.now() - host.value.uptime_seconds * 1000)
+  if (serverBootMs.value === 0) return ''
+  return new Date(serverBootMs.value)
     .toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' })
 })
 
@@ -172,7 +174,7 @@ const items = computed(() => [
     width: 40px; height: 40px;
     border-radius: var(--radius-lg);
     background: linear-gradient(135deg, var(--brand-from), var(--brand-to));
-    color: var(--color-primary-foreground);
+    color: #ffffff;
     display: inline-flex;
     align-items: center;
     justify-content: center;

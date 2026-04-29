@@ -266,20 +266,3 @@ html {
   0%   { background-position: -400px 0; }
   100% { background-position: 400px 0; }
 }
-
-.skeleton-pulse {
-  background: linear-gradient(
-    90deg,
-    var(--color-skeleton) 0%,
-    var(--color-skeleton-shine) 40%,
-    var(--color-skeleton) 70%
-  );
-  background-size: 800px 100%;
-  animation: skeleton-shimmer 1.8s ease-in-out infinite;
-  border-radius: var(--radius-sm);
-}
-
-// Global reduced-motion: disable skeleton animation
-@media (prefers-reduced-motion: reduce) {
-  .skeleton-pulse { animation: none; }
-}

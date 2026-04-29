@@ -84,12 +84,12 @@ function pick(ms: number) {
 
     <div class="chart-bar__toggles">
       <label class="chart-bar__toggle">
-        <input v-model="ui.cpuExpanded" type="checkbox" class="chart-bar__toggle-input">
+        <input v-model="ui.cpuExpanded" type="checkbox" class="chart-bar__toggle-input" role="switch" :aria-checked="String(ui.cpuExpanded)">
         <span class="chart-bar__toggle-track" />
         <span class="chart-bar__toggle-label">Show all CPU cores</span>
       </label>
       <label class="chart-bar__toggle">
-        <input v-model="ui.disksExpanded" type="checkbox" class="chart-bar__toggle-input">
+        <input v-model="ui.disksExpanded" type="checkbox" class="chart-bar__toggle-input" role="switch" :aria-checked="String(ui.disksExpanded)">
         <span class="chart-bar__toggle-track" />
         <span class="chart-bar__toggle-label">Show all disks</span>
       </label>
@@ -243,7 +243,7 @@ function pick(ms: number) {
     border-radius: 50%;
     background: var(--emerald-400);
     opacity: 0.6;
-    animation: live-ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+    animation: live-ping 1.5s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
   }
   &__pulse-dot {
     position: relative;
@@ -251,6 +251,7 @@ function pick(ms: number) {
     height: 8px;
     border-radius: 50%;
     background: var(--emerald-500);
+    animation: live-breathe 1.5s cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
   }
 
   &__toggles {
@@ -312,12 +313,21 @@ function pick(ms: number) {
 }
 
 @keyframes live-ping {
-  0%   { transform: scale(1);   opacity: 0.6; }
-  75%  { transform: scale(2);   opacity: 0;   }
-  100% { transform: scale(2.2); opacity: 0;   }
+  0%   { transform: scale(0.85); opacity: 0; }
+  8%   { opacity: 0.65; }
+  60%  { transform: scale(2.1); opacity: 0.12; }
+  75%  { transform: scale(2.3); opacity: 0; }
+  100% { transform: scale(2.3); opacity: 0; }
+}
+
+@keyframes live-breathe {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .chart-bar__pulse-ping { animation: none; }
+  .chart-bar__pulse-ping,
+  .chart-bar__pulse-dot { animation: none; }
 }
 </style>

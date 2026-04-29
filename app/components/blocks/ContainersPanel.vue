@@ -186,12 +186,21 @@ watch(
 
         <template v-if="loading">
           <div v-for="i in 5" :key="i" class="containers-panel__skeleton-row" aria-hidden="true">
-            <div class="containers-panel__skeleton-cell containers-panel__skeleton-cell--lg" />
-            <div class="containers-panel__skeleton-cell containers-panel__skeleton-cell--md" />
-            <div class="containers-panel__skeleton-cell containers-panel__skeleton-cell--sm" />
-            <div class="containers-panel__skeleton-cell containers-panel__skeleton-cell--sm" />
-            <div class="containers-panel__skeleton-cell containers-panel__skeleton-cell--xs" />
-            <div class="containers-panel__skeleton-cell containers-panel__skeleton-cell--act" />
+            <div class="containers-panel__sk-name">
+              <div class="containers-panel__sk-dot" />
+              <div class="containers-panel__sk-name-stack">
+                <div class="containers-panel__sk-name-bar" />
+                <div class="containers-panel__sk-image-bar" />
+              </div>
+            </div>
+            <div class="containers-panel__sk-pill" />
+            <div class="containers-panel__sk-num" />
+            <div class="containers-panel__sk-num" />
+            <div class="containers-panel__sk-port" />
+            <div class="containers-panel__sk-actions">
+              <div class="containers-panel__sk-btn" />
+              <div class="containers-panel__sk-btn" />
+            </div>
           </div>
         </template>
         <EmptyState
@@ -404,16 +413,58 @@ watch(
     align-items: center;
     border-top: 1px solid var(--color-divider);
   }
-  &__skeleton-cell {
-    @include skeleton(14px, 100%);
-    &--lg  { max-width: 180px; }
-    &--md  { max-width: 80px; }
-    &--sm  { max-width: 60px; }
-    &--xs  { max-width: 40px; }
-    &--act {
-      max-width: 80px;
-      margin-left: auto;
-    }
+
+  // Name column: circle + two-line stack
+  &__sk-name {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-width: 0;
+  }
+  &__sk-dot {
+    @include skeleton(10px, 10px);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  &__sk-name-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+  }
+  &__sk-name-bar {
+    @include skeleton(13px, 120px);
+  }
+  &__sk-image-bar {
+    @include skeleton(12px, 90px);
+  }
+
+  // Status: pill shape
+  &__sk-pill {
+    @include skeleton(20px, 64px);
+    border-radius: var(--radius-md);
+  }
+
+  // CPU / Memory: narrow mono hint
+  &__sk-num {
+    @include skeleton(13px, 48px);
+  }
+
+  // Port
+  &__sk-port {
+    @include skeleton(13px, 32px);
+  }
+
+  // Actions: small squares
+  &__sk-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-1);
+  }
+  &__sk-btn {
+    @include skeleton(32px, 32px);
+    border-radius: var(--radius-sm);
   }
 
   &__empty {

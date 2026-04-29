@@ -4,6 +4,7 @@ import { useHostsStore } from '~/stores/hosts.store'
 import { useMetricsStore } from '~/stores/metrics.store'
 import { useRequestsStore } from '~/stores/requests.store'
 import { useLogsStore } from '~/stores/logs.store'
+import { useContainersStore } from '~/stores/containers.store'
 import { useUiStore } from '~/stores/ui.store'
 
 const Toaster = defineAsyncComponent(() =>
@@ -15,6 +16,7 @@ const ui = useUiStore()
 const metrics = useMetricsStore()
 const requests = useRequestsStore()
 const hosts = useHostsStore()
+const containers = useContainersStore()
 const logs = useLogsStore()
 
 const polling = computed(() => route.path !== '/login' && !ui.paused)
@@ -44,7 +46,12 @@ function runTick() {
   if (hosts.isEmpty) return
   tickN++
   void metrics.refreshSnapshot()
-  if (logs.activeId) void logs.refreshActive()
+  if (logs.activeId) {
+    void logs.refreshActive()
+  } else {
+    const running = containers.items.filter(c => c.state === 'running').map(c => c.id)
+    if (running.length) void logs.refreshAll(running)
+  }
   if (tickN % POLLING.HISTORY_EVERY === 0) void metrics.refreshHistory()
   if (tickN % POLLING.REQUESTS_EVERY === 0) void requests.refresh()
 }

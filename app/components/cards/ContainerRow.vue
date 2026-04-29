@@ -20,8 +20,11 @@ const props = withDefaults(defineProps<Props>(), {
 })
 const emit = defineEmits<{ action: [id: string, action: ContainerAction] }>()
 
+const isPending = computed(() => !!props.pendingAction)
+
 const status = computed(() => normalizeContainerState(props.container.state))
 const tone = computed<'success' | 'warn' | 'neutral'>(() => {
+  if (isPending.value) return 'warn'
   switch (status.value) {
     case CONTAINER_STATUS.RUNNING: return 'success'
     case CONTAINER_STATUS.DEGRADED: return 'warn'
@@ -30,6 +33,15 @@ const tone = computed<'success' | 'warn' | 'neutral'>(() => {
 })
 const isRunning = computed(() => status.value === CONTAINER_STATUS.RUNNING)
 const isStopped = computed(() => status.value === CONTAINER_STATUS.STOPPED)
+
+const pendingLabel = computed(() => {
+  switch (props.pendingAction) {
+    case 'start': return 'Starting\u2026'
+    case 'stop': return 'Stopping\u2026'
+    case 'restart': return 'Restarting\u2026'
+    default: return ''
+  }
+})
 
 const cpuStr = computed(() => pct(props.container.stat?.cpu ?? 0, 0))
 const memStr = computed(() =>
@@ -47,15 +59,20 @@ const portStr = computed(() => {
 })
 
 function trigger(e: Event, action: ContainerAction) {
+  e.preventDefault()
   e.stopPropagation()
   emit('action', props.container.id, action)
 }
 </script>
 
 <template>
-  <NuxtLink :to="ROUTES.CONTAINER(container.name)" class="cont-row">
+  <NuxtLink
+    :to="ROUTES.CONTAINER(container.name)"
+    class="cont-row"
+    :class="{ 'cont-row--pending': isPending }"
+  >
     <div class="cont-row__name">
-      <StatusDot :status="status" :pulse="isRunning" />
+      <StatusDot :status="isPending ? 'warn' : status" :pulse="isPending || isRunning" />
       <div class="cont-row__name-meta">
         <span class="cont-row__title">{{ container.name }}</span>
         <span class="cont-row__image">{{ container.image }}</span>
@@ -63,14 +80,20 @@ function trigger(e: Event, action: ContainerAction) {
     </div>
 
     <div class="cont-row__cell">
-      <BaseBadge :tone="tone" size="sm">{{ container.state }}</BaseBadge>
+      <BaseBadge :tone="tone" size="sm">{{
+        isPending ? pendingLabel : container.state
+      }}</BaseBadge>
     </div>
 
     <div class="cont-row__cell cont-row__cell--mono">{{ cpuStr }}</div>
     <div class="cont-row__cell cont-row__cell--mono">{{ memStr }}</div>
     <div class="cont-row__cell cont-row__cell--port">{{ portStr }}</div>
 
-    <div class="cont-row__actions" @click.stop>
+    <div v-if="isPending" class="cont-row__actions cont-row__actions--pending">
+      <span class="cont-row__spinner" aria-hidden="true" />
+      <span class="cont-row__pending-label">{{ pendingLabel }}</span>
+    </div>
+    <div v-else class="cont-row__actions" @click.prevent.stop>
       <button
         type="button"
         class="cont-row__btn"
@@ -117,6 +140,15 @@ function trigger(e: Event, action: ContainerAction) {
 
   &:hover { background: var(--color-accent); }
 
+  &--pending {
+    background: oklch(0.75 0.05 75 / 0.06);
+    &:hover { background: oklch(0.75 0.05 75 / 0.10); }
+    .theme--dark & {
+      background: oklch(0.35 0.05 75 / 0.12);
+      &:hover { background: oklch(0.35 0.05 75 / 0.20); }
+    }
+  }
+
   &__name {
     display: flex;
     align-items: center;
@@ -153,6 +185,27 @@ function trigger(e: Event, action: ContainerAction) {
     align-items: center;
     justify-content: flex-end;
     gap: 4px;
+
+    &--pending {
+      gap: 6px;
+    }
+  }
+
+  &__pending-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--amber-500);
+    white-space: nowrap;
+  }
+
+  &__spinner {
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--color-border);
+    border-top-color: var(--amber-500);
+    border-radius: 50%;
+    animation: cont-spin 0.7s linear infinite;
+    flex-shrink: 0;
   }
 
   &__btn {
@@ -180,5 +233,9 @@ function trigger(e: Event, action: ContainerAction) {
       &:hover { background: oklch(0.637 0.237 25.331 / 0.12); }
     }
   }
+}
+
+@keyframes cont-spin {
+  to { transform: rotate(360deg); }
 }
 </style>

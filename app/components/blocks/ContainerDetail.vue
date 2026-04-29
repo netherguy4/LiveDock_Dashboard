@@ -3,7 +3,7 @@
 // separately by the page.
 
 import {
-  ArrowLeft, Box, Play, Square, RotateCw, Cpu, MemoryStick, Network, HardDrive,
+  ArrowLeft, Box, Play, Square, RotateCw, Cpu, MemoryStick, Network,
 } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
 import BaseBadge from '~/components/ui/BaseBadge.vue'
@@ -48,16 +48,28 @@ async function action(a: ContainerAction) {
   }
 }
 
+const memValue = computed(() => (c.value?.stat ? humanBytes(c.value.stat.mem_used, 0).split(' ')[0] ?? '—' : '—'))
+const memUnit = computed(() => (c.value?.stat ? humanBytes(c.value.stat.mem_used, 0).split(' ')[1] ?? '' : ''))
+const memSeries = computed(() => {
+  const raw = c.value?.stat?.mem_used ?? 0
+  const u = memUnit.value
+  const powers: Record<string, number> = { B: 1, KB: 1024, MB: 1024 ** 2, GB: 1024 ** 3, TB: 1024 ** 4 }
+  return spark(raw / (powers[u] ?? 1), `m-${c.value?.name ?? ''}`)
+})
+
 // Synthesize a per-container series from current values; replace with
-// real per-container history when the backend exposes it.
+// real per-container history when the backend exposes it. The spread
+// is capped at a conservative fraction of the base value to keep the
+// fake sparkline from misleading.
 function spark(val: number, salt: string): number[] {
   const seed = [...salt].reduce((s, ch) => s + ch.charCodeAt(0), 0)
   const out: number[] = []
   let s = seed
+  const spread = Math.max(0.5, Math.min(val * 0.06, 3))
   for (let i = 0; i < 13; i++) {
     s = (s * 9301 + 49297) % 233280
     const r = s / 233280
-    out.push(Math.max(0, val + (r - 0.5) * Math.max(20, val * 0.4)))
+    out.push(Math.max(0, val + (r - 0.5) * spread * 2))
   }
   return out
 }
@@ -124,16 +136,20 @@ function spark(val: number, salt: string): number[] {
         :pct="c.stat?.cpu ?? 0"
         :series="spark(c.stat?.cpu ?? 5, c.name)"
         palette="cpu"
+        :loading="containers.loading"
+        :error="containers.error ?? undefined"
       />
       <StatCard
         title="Memory"
         :icon="MemoryStick"
-        :value="c.stat ? humanBytes(c.stat.mem_used, 0).split(' ')[0] : '—'"
-        :unit="c.stat ? humanBytes(c.stat.mem_used, 0).split(' ')[1] : ''"
+        :value="memValue"
+        :unit="memUnit"
         :pct="c.stat?.mem ?? 0"
-        :series="spark(c.stat?.mem ?? 10, `m-${c.name}`)"
+        :series="memSeries"
         :sublabel="c.stat ? `of ${humanBytes(c.stat.mem_limit)}` : ''"
         palette="mem"
+        :loading="containers.loading"
+        :error="containers.error ?? undefined"
       />
       <StatCard
         title="Net RX"
@@ -143,15 +159,19 @@ function spark(val: number, salt: string): number[] {
         :series="spark((c.stat?.net_rx_bps ?? 0) / 1024 / 1024, `n-${c.name}`)"
         tone="ok"
         palette="net"
+        :loading="containers.loading"
+        :error="containers.error ?? undefined"
       />
       <StatCard
         title="Net TX"
-        :icon="HardDrive"
+        :icon="Network"
         :value="(((c.stat?.net_tx_bps ?? 0) / 1024 / 1024)).toFixed(1)"
         unit="MB/s"
         :series="spark((c.stat?.net_tx_bps ?? 0) / 1024 / 1024, `t-${c.name}`)"
         tone="ok"
-        palette="disk"
+        palette="net"
+        :loading="containers.loading"
+        :error="containers.error ?? undefined"
       />
     </div>
   </div>

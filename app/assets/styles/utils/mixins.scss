@@ -1,3 +1,5 @@
+@use 'variables' as *;
+
 // Visually hidden but available to assistive tech.
 @mixin visually-hidden {
   position: absolute;
@@ -63,7 +65,8 @@
     var(--color-skeleton) 70%
   );
   background-size: 800px 100%;
-  animation: skeleton-shimmer 1.8s ease-in-out infinite;
+  animation: skeleton-shimmer 1.8s $ease-out infinite;
+  will-change: background-position;
 
   @media (prefers-reduced-motion: reduce) {
     animation: none;

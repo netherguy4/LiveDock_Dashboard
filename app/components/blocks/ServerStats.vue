@@ -9,10 +9,27 @@
 import { Cpu, MemoryStick, Network, HardDrive } from 'lucide-vue-next'
 import StatCard from '~/components/cards/StatCard.vue'
 import BaseBadge from '~/components/ui/BaseBadge.vue'
-import { humanBps, humanBytes, pct } from '~/utils/format'
+import { humanBytes, pct } from '~/utils/format'
 import { THRESHOLDS } from '~/constants/thresholds'
 import { useMetricsStore } from '~/stores/metrics.store'
 import { useUiStore } from '~/stores/ui.store'
+
+function bpsFormat(n: number | undefined | null): { value: string; unit: string } {
+  if (n == null || !Number.isFinite(n) || n < 0) return { value: '—', unit: '' }
+  const units = ['B/s', 'KB/s', 'MB/s', 'GB/s', 'TB/s']
+  let i = 0
+  let v = n
+  while (v >= 1024 && i < units.length - 1) {
+    v /= 1024
+    i++
+  }
+  return { value: v.toFixed(1), unit: units[i] }
+}
+
+function bpsFactor(unit: string): number {
+  const idx = ['B/s', 'KB/s', 'MB/s', 'GB/s', 'TB/s'].indexOf(unit)
+  return idx < 0 ? 1 : 1024 ** idx
+}
 
 const metrics = useMetricsStore()
 const ui = useUiStore()
@@ -22,12 +39,6 @@ const error = computed(() => metrics.error)
 
 const cpuSeries = computed(() => metrics.history.map((h) => h.cpu))
 const memSeries = computed(() => metrics.history.map((h) => h.mem))
-const netSeries = computed(() =>
-  metrics.history.map((h) => (h.net_rx_bps + h.net_tx_bps) / (1024 * 1024)),
-)
-const diskSeries = computed(() =>
-  metrics.history.map((h) => (h.disk_read_bps + h.disk_write_bps) / (1024 * 1024)),
-)
 
 const cpuValue = computed(() => Math.round(metrics.cpuPct).toString())
 const memValue = computed(() => Math.round(metrics.memPct).toString())
@@ -36,10 +47,23 @@ const memUsed = computed(() =>
     ? `${humanBytes(metrics.snapshot.mem_point.mem_used)} / ${humanBytes(metrics.snapshot.mem_point.mem_total)}`
     : '',
 )
-const netValue = computed(() => humanBps(metrics.netBps).replace('/s', ''))
-const netUnit = computed(() => '/s')
-const diskValue = computed(() => humanBps(metrics.diskBps).replace('/s', ''))
-const diskUnit = computed(() => '/s')
+const netBps = computed(() => metrics.netBps)
+const netFmt = computed(() => bpsFormat(netBps.value))
+const netValue = computed(() => netFmt.value.value)
+const netUnit = computed(() => netFmt.value.unit)
+const netSeries = computed(() => {
+  const factor = bpsFactor(netFmt.value.unit)
+  return metrics.history.map((h) => (h.net_rx_bps + h.net_tx_bps) / factor)
+})
+
+const diskBps = computed(() => metrics.diskBps)
+const diskFmt = computed(() => bpsFormat(diskBps.value))
+const diskValue = computed(() => diskFmt.value.value)
+const diskUnit = computed(() => diskFmt.value.unit)
+const diskSeries = computed(() => {
+  const factor = bpsFactor(diskFmt.value.unit)
+  return metrics.history.map((h) => (h.disk_read_bps + h.disk_write_bps) / factor)
+})
 
 const diskUsedPct = computed(() => {
   const ds = metrics.snapshot?.disks ?? []

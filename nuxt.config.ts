@@ -24,9 +24,7 @@ export default defineNuxtConfig({
     login: process.env.LOGIN || "admin",
     password: process.env.PASSWORD || "",
     sessionSecret: process.env.SESSION_SECRET || "",
-    public: {
-      pollInterval: Number(process.env.NUXT_PUBLIC_POLL_INTERVAL || 2000),
-    },
+    public: {},
   },
 
   app: {

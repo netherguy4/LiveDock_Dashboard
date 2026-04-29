@@ -28,6 +28,7 @@ interface Props {
   trend?: number | null
   palette?: Palette
   loading?: boolean
+  error?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -42,6 +43,7 @@ const props = withDefaults(defineProps<Props>(), {
   trend: null,
   palette: 'auto',
   loading: false,
+  error: undefined,
 })
 
 const computedTone = computed<Tone>(() =>
@@ -51,7 +53,7 @@ const computedTone = computed<Tone>(() =>
 const PALETTES = {
   cpu:  { stroke: 'var(--emerald-500)', bg: 'var(--color-accent-bg)',  fg: 'var(--emerald-500)' },
   mem:  { stroke: 'var(--cyan-500)',   bg: 'var(--color-accent-bg)',   fg: 'var(--cyan-500)' },
-  net:  { stroke: '#8b5cf6',           bg: 'oklch(0.55 0.18 290 / 0.10)', fg: '#8b5cf6' },
+  net:  { stroke: 'var(--color-chart-4)', bg: 'oklch(0.627 0.265 303.9 / 0.10)', fg: 'var(--color-chart-4)' },
   disk: { stroke: 'var(--amber-500)',  bg: 'oklch(0.828 0.189 84.429 / 0.10)', fg: 'var(--amber-500)' },
 } as const
 
@@ -76,7 +78,6 @@ const trendTone = computed<'success' | 'warn'>(() =>
 <template>
   <article class="stat-card" :class="`stat-card--${computedTone}`" :aria-busy="loading ? true : undefined">
     <template v-if="loading">
-      <div aria-hidden="true">
       <div class="stat-card__head">
         <div class="stat-card__skeleton-icon" />
         <div class="stat-card__skeleton-label" />
@@ -84,7 +85,18 @@ const trendTone = computed<'success' | 'warn'>(() =>
       <div class="stat-card__skeleton-value" />
       <div class="stat-card__skeleton-sub" />
       <div class="stat-card__skeleton-spark" />
+    </template>
+    <template v-else-if="error">
+      <div class="stat-card__head">
+        <div class="stat-card__icon stat-card__icon--error" :style="{ background: TONE_COLORS.danger.bg, color: TONE_COLORS.danger.fg }">
+          <component :is="icon" v-if="icon" :size="18" />
+        </div>
+        <span class="stat-card__label">{{ title }}</span>
       </div>
+      <div class="stat-card__main">
+        <span class="stat-card__value stat-card__value--err">—</span>
+      </div>
+      <div class="stat-card__sub">{{ error }}</div>
     </template>
     <template v-else>
       <div class="stat-card__head">
@@ -109,6 +121,7 @@ const trendTone = computed<'success' | 'warn'>(() =>
         class="stat-card__spark"
         :values="series"
         :color="colors.stroke"
+        :unit="unit"
         :height="56"
       />
     </template>
@@ -164,6 +177,8 @@ const trendTone = computed<'success' | 'warn'>(() =>
     letter-spacing: -0.5px;
     color: var(--color-foreground);
     line-height: 1.1;
+
+    &--err { color: var(--color-subtle-foreground); }
   }
   &__unit {
     font-size: 14px;

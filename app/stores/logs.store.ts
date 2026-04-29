@@ -44,6 +44,17 @@ export const useLogsStore = defineStore('logs', {
       if (this.activeId) await this.fetchTail(this.activeId)
     },
 
+    async refreshAll(ids: string[], concurrency = 8) {
+      let i = 0
+      const workers = Array.from({ length: Math.min(concurrency, ids.length) }, async () => {
+        let id: string | undefined
+        while ((id = ids[i++])) {
+          await this.fetchTail(id).catch(() => {})
+        }
+      })
+      await Promise.all(workers)
+    },
+
     // prefetch warms the cache for a list of containers so opening the logs
     // panel renders instantly. Runs with bounded concurrency; skips containers
     // already cached within the last 30s.

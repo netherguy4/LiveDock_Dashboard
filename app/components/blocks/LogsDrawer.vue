@@ -1,13 +1,7 @@
 <script setup lang="ts">
-// Side drawer that hosts LogsPanel — port of new_frontend LogsDrawer.
-// Opens via useUiStore (logsDrawerOpen). Locks body scroll while open;
-// closes on Esc, backdrop click, and swipe-right on touch devices.
-// Spring-like slide animation with subtle overshoot.
-
 import { Terminal, X } from 'lucide-vue-next'
 import { useSwipe } from '@vueuse/core'
 import LogsPanel from '~/components/blocks/LogsPanel.vue'
-import BaseBadge from '~/components/ui/BaseBadge.vue'
 import { useUiStore } from '~/stores/ui.store'
 
 const ui = useUiStore()
@@ -19,22 +13,24 @@ function onKey(e: KeyboardEvent) {
   if (e.key === 'Escape' && ui.logsDrawerOpen) ui.closeLogsDrawer()
 }
 
-watch(() => ui.logsDrawerOpen, (open) => {
-  if (typeof document === 'undefined') return
-  document.body.style.overflow = open ? 'hidden' : ''
-  if (open) {
-    previousFocus = document.activeElement as HTMLElement
-    nextTick(() => closeBtnRef.value?.focus())
-  } else {
-    previousFocus?.focus()
-    previousFocus = null
-  }
-})
+watch(
+  () => ui.logsDrawerOpen,
+  (open) => {
+    if (typeof document === 'undefined') return
+    document.body.style.overflow = open ? 'hidden' : ''
+    if (open) {
+      previousFocus = document.activeElement as HTMLElement
+      nextTick(() => closeBtnRef.value?.focus())
+    } else {
+      previousFocus?.focus()
+      previousFocus = null
+    }
+  },
+)
 
 onMounted(() => window.addEventListener('keydown', onKey))
 onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 
-// Swipe-to-close on mobile
 const { isSwiping, lengthX } = useSwipe(drawerRef, {
   threshold: 20,
   onSwipeEnd() {
@@ -72,30 +68,18 @@ const swipeOffset = computed(() =>
             <div class="logs-drawer__icon">
               <Terminal :size="16" />
             </div>
-            <div class="logs-drawer__title-meta">
-              <span class="logs-drawer__title-text">Live logs</span>
-              <span class="logs-drawer__title-sub">aggregated from all containers</span>
-            </div>
-            <BaseBadge tone="success">
-              <span class="logs-drawer__pulse" aria-hidden="true" /> streaming
-            </BaseBadge>
+            <span class="logs-drawer__title-text">Live logs</span>
           </div>
-          <div class="logs-drawer__head-actions">
-            <BaseBadge>INFO</BaseBadge>
-            <BaseBadge tone="warn">WARN</BaseBadge>
-            <BaseBadge tone="danger">ERROR</BaseBadge>
-            <button
-              ref="closeBtnRef"
-              type="button"
-              class="logs-drawer__close"
-              aria-label="Close logs"
-              @click="ui.closeLogsDrawer"
-            >
-              <X :size="16" />
-            </button>
-          </div>
+          <button
+            ref="closeBtnRef"
+            type="button"
+            class="logs-drawer__close"
+            aria-label="Close logs"
+            @click="ui.closeLogsDrawer"
+          >
+            <X :size="16" />
+          </button>
         </header>
-
         <div class="logs-drawer__body">
           <LogsPanel />
         </div>
@@ -130,8 +114,6 @@ const swipeOffset = computed(() =>
     display: flex;
     align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap;
-    gap: var(--space-3);
     padding: var(--space-4) var(--space-5);
     border-bottom: 1px solid var(--color-divider);
   }
@@ -140,53 +122,29 @@ const swipeOffset = computed(() =>
     display: inline-flex;
     align-items: center;
     gap: var(--space-3);
-    min-width: 0;
-    flex: 1 1 auto;
   }
+
   &__icon {
-    width: 36px; height: 36px;
+    width: 32px;
+    height: 32px;
     border-radius: var(--radius-lg);
     background: linear-gradient(135deg, var(--brand-from), var(--brand-to));
-    color: var(--color-primary-foreground);
+    color: #ffffff;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
   }
-  &__title-meta {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.2;
-    min-width: 0;
-  }
+
   &__title-text {
     font-size: var(--fs-h3);
     font-weight: var(--fw-bold);
     color: var(--color-foreground);
   }
-  &__title-sub {
-    font-size: var(--fs-caption);
-    color: var(--color-subtle-foreground);
-  }
-  @media (max-width: 600px) {
-    &__title-sub { display: none; }
-  }
-  &__pulse {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--emerald-500);
-  }
-
-  &__head-actions {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    flex-shrink: 0;
-  }
 
   &__close {
-    width: 36px; height: 36px;
+    width: 36px;
+    height: 36px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -196,8 +154,14 @@ const swipeOffset = computed(() =>
     border-radius: var(--radius-md);
     cursor: pointer;
 
-    &:hover { background: var(--color-accent); color: var(--color-foreground); }
-    &:focus-visible { @include focus-ring; }
+    &:hover {
+      background: var(--color-accent);
+      color: var(--color-foreground);
+    }
+
+    &:focus-visible {
+      @include focus-ring;
+    }
   }
 
   &__body {
@@ -208,24 +172,27 @@ const swipeOffset = computed(() =>
   }
 }
 
-// Spring-like overshoot — gentle bounce on open
 .drawer-enter-active {
-  transition: transform 350ms cubic-bezier(0.22, 1.1, 0.36, 1);
+  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
 }
+
 .drawer-leave-active {
   transition: transform 200ms $ease-out;
 }
+
 .drawer-enter-from,
 .drawer-leave-to {
   transform: translateX(100%);
 }
 
 .drawer-backdrop-enter-active {
-  transition: opacity 250ms $ease-out;
+  transition: opacity 220ms $ease-out;
 }
+
 .drawer-backdrop-leave-active {
-  transition: opacity 180ms $ease-out;
+  transition: opacity 160ms $ease-out;
 }
+
 .drawer-backdrop-enter-from,
 .drawer-backdrop-leave-to {
   opacity: 0;

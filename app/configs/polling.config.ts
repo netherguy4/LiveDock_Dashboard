@@ -1,6 +1,5 @@
-// Default polling cadence. The base is configurable via env
-// (NUXT_PUBLIC_POLL_INTERVAL); per-task multipliers express "this can be
-// less frequent" without coupling to absolute numbers.
+// Polling cadence. Per-task multipliers express "this can be less
+// frequent" without coupling to absolute numbers.
 //
 // Effective interval = max(base * every, minMs).
 
@@ -19,5 +18,5 @@ export const POLLING = {
   LOGS_EVERY: 1,           // tail follows the base tick
 
   // Pre-set options shown in the refresh selector.
-  CHOICES_MS: [1000, 2000, 5000, 10_000, 30_000, 60_000, 300_000],
+  CHOICES_MS: [2000, 5000, 30_000, 300_000],
 } as const

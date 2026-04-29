@@ -19,7 +19,7 @@ withDefaults(
     :style="{ width: `${size}px`, height: `${size}px` }"
   >
     <span
-      v-if="pulse && (status === 'running' || status === 'ok')"
+      v-if="pulse"
       class="dot__ping"
       aria-hidden="true"
     />

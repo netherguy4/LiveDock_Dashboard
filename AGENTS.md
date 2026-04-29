@@ -160,7 +160,7 @@ Persist: `ui.store` и `containers.store` используют `pinia-plugin-per
 | `LOGIN` | Логин (по умолчанию `admin`) |
 | `PASSWORD` | Пароль |
 | `SESSION_SECRET` | Секрет для HMAC-подписи сессии |
-| `NUXT_PUBLIC_POLL_INTERVAL` | Интервал опроса в мс (по умолчанию 2000) |
+
 | `NITRO_PRESET` | Пресет деплоя (по умолчанию `vercel`) |
 
 ## Продуктовые принципы
