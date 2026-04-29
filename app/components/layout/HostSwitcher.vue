@@ -29,21 +29,38 @@ function pick(id: string) {
 
 // ---- Add host dialog ----------------------------------------------------
 const draft = reactive({ name: '', url: '', token: '' })
-function resetDraft() { draft.name = ''; draft.url = ''; draft.token = '' }
-function submitAdd() {
+const validating = ref(false)
+const pingError = ref<string | null>(null)
+function resetDraft() { draft.name = ''; draft.url = ''; draft.token = ''; pingError.value = null }
+async function submitAdd() {
   if (!draft.name.trim() || !draft.url.trim()) return
+  validating.value = true
+  pingError.value = null
+  try {
+    const res = await useApi().pingHost(draft.url.trim(), draft.token.trim() || undefined)
+    if (!res.ok) {
+      pingError.value = res.error ?? 'Could not reach host'
+      return
+    }
+  } catch {
+    pingError.value = 'Could not reach host'
+    return
+  } finally {
+    validating.value = false
+  }
   hosts.add({
     name: draft.name.trim(),
     url: draft.url.trim(),
     token: draft.token.trim() || undefined,
   })
   resetDraft()
-    hosts.setAddDialogOpen(false)
+  hosts.setAddDialogOpen(false)
 }
 
 watch(() => hosts.addDialogOpen, (v) => {
   if (typeof document === 'undefined') return
   document.body.style.overflow = v ? 'hidden' : ''
+  if (v) pingError.value = null
 })
 </script>
 
@@ -163,6 +180,9 @@ watch(() => hosts.addDialogOpen, (v) => {
                     class="host-modal__input host-modal__input--mono"
                   >
                 </span>
+                <Transition name="error-inline">
+                  <span v-if="pingError" class="host-modal__error">{{ pingError }}</span>
+                </Transition>
               </label>
 
               <label class="host-modal__field">
@@ -183,10 +203,11 @@ watch(() => hosts.addDialogOpen, (v) => {
                 <button
                   type="submit"
                   class="host-modal__submit"
-                  :disabled="!draft.name.trim() || !draft.url.trim()"
+                  :disabled="!draft.name.trim() || !draft.url.trim() || validating"
                 >
-                  <Plus :size="14" />
-                  Add host
+                  <span v-if="validating" class="host-modal__spinner" />
+                  <Plus v-else :size="14" />
+                  {{ validating ? 'Checking…' : 'Add host' }}
                 </button>
               </div>
             </form>
@@ -476,6 +497,22 @@ watch(() => hosts.addDialogOpen, (v) => {
     &::placeholder { color: var(--color-subtle-foreground); }
     &:focus { outline: none; border-color: var(--emerald-500); box-shadow: 0 0 0 3px rgb(16 185 129 / 0.20); }
     &--mono { font-family: $font-stack-mono; }
+    &--has-error { border-color: var(--red-400); }
+  }
+
+  &__error {
+    font-size: 11px;
+    color: var(--red-400);
+    line-height: 1.3;
+  }
+
+  &__spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: host-modal-spin 0.6s linear infinite;
   }
 
   &__actions {
@@ -534,5 +571,17 @@ watch(() => hosts.addDialogOpen, (v) => {
 .modal-enter-from .host-modal__card, .modal-leave-to .host-modal__card {
   transform: scale(0.96);
   opacity: 0;
+}
+
+.error-inline-enter-active, .error-inline-leave-active {
+  transition: opacity $transition-fast, transform $transition-fast;
+}
+.error-inline-enter-from, .error-inline-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+@keyframes host-modal-spin {
+  to { transform: rotate(360deg); }
 }
 </style>

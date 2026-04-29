@@ -48,6 +48,12 @@ export const useHostsStore = defineStore('hosts', {
         this.error = null
       } catch (e: unknown) {
         this.error = e instanceof Error ? e.message : String(e)
+        if (this.localExtras.length) {
+          this.items = [...this.localExtras]
+          if (!this.activeId) {
+            this.activeId = this.localExtras[0].id
+          }
+        }
       } finally {
         this.loading = false
       }
