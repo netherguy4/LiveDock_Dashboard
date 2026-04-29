@@ -235,15 +235,15 @@ useHead({ title: 'LiveDock · Dashboard' })
     flex-shrink: 0;
   }
   &__sk-stat-label {
-    @include skeleton(13px, 64px);
+    @include skeleton(20px, 64px);
     border-radius: var(--radius-sm);
   }
   &__sk-stat-value {
-    @include skeleton(28px, 120px);
+    @include skeleton(31px, 120px);
     border-radius: var(--radius-md);
   }
   &__sk-stat-sub {
-    @include skeleton(12px, 80px);
+    @include skeleton(17px, 80px);
     border-radius: var(--radius-sm);
   }
   &__sk-stat-spark {

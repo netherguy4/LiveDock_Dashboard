@@ -61,8 +61,8 @@ watch([() => ui.intervalMs, polling], start, { immediate: false })
 // Load data when hosts exist and we're past the login page.
 // /login guard prevents 401s — all API calls would fail during auth.
 watch(
-  () => [hosts.isEmpty, route.path] as const,
-  ([empty, path]) => {
+  () => [hosts.isEmpty, route.path, hosts.activeId] as const,
+  ([empty, path, activeId]) => {
     tickN = 0
     if (empty || path === '/login') return
     void metrics.refreshSnapshot()

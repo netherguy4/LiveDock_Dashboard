@@ -9,6 +9,7 @@ export const useMetricsStore = defineStore('metrics', {
     snapshot: null as Snapshot | null,
     history: [] as HistoryPoint[],
     loading: false,
+    historyReady: false,
     error: null as string | null,
     lastUpdated: 0,
   }),
@@ -40,6 +41,8 @@ export const useMetricsStore = defineStore('metrics', {
         this.history = await useApi().history(minutes)
       } catch (e: unknown) {
         this.error = e instanceof Error ? e.message : String(e)
+      } finally {
+        this.historyReady = true
       }
     },
   },

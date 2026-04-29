@@ -35,6 +35,7 @@ const metrics = useMetricsStore()
 const ui = useUiStore()
 
 const loading = computed(() => !metrics.snapshot && metrics.loading)
+const sparklineLoading = computed(() => !metrics.historyReady)
 const error = computed(() => metrics.error)
 
 const cpuSeries = computed(() => metrics.history.map((h) => h.cpu))
@@ -105,6 +106,7 @@ function diskClass(used: number) {
         palette="cpu"
         :sublabel="cores.length ? `${cores.length} cores` : ''"
         :loading="loading"
+        :history-loading="sparklineLoading"
       />
       <StatCard
         title="Memory"
@@ -118,6 +120,7 @@ function diskClass(used: number) {
         palette="mem"
         :sublabel="memUsed"
         :loading="loading"
+        :history-loading="sparklineLoading"
       />
       <StatCard
         title="Network"
@@ -128,6 +131,7 @@ function diskClass(used: number) {
         tone="ok"
         palette="net"
         :loading="loading"
+        :history-loading="sparklineLoading"
       />
       <StatCard
         title="Disk I/O"
@@ -141,6 +145,7 @@ function diskClass(used: number) {
         palette="disk"
         :sublabel="`max volume ${pct(diskUsedPct, 0)}`"
         :loading="loading"
+        :history-loading="sparklineLoading"
       />
     </div>
 

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+
 // LiveDock logo. Variants:
 //   layout:  full (mark + text on the side) | stacked (mark above text) | icon (mark only)
 //   mark:    gradient | mono-dark | mono-light | outline
@@ -31,10 +33,18 @@ const sizeMap = {
 } as const
 
 const s = computed(() => sizeMap[props.size])
+
+const beatKey = ref(0)
+const hasHovered = ref(false)
+
+function onLogoHover() {
+  hasHovered.value = true
+  beatKey.value++
+}
 </script>
 
 <template>
-  <div class="logo" :class="[`logo--${layout}`, { 'logo--on-dark': onDark }]">
+  <div class="logo" :class="[`logo--${layout}`, { 'logo--on-dark': onDark }]" @mouseenter="onLogoHover">
     <div
       class="logo__mark"
       :class="[`logo__mark--${mark}`, { 'logo__mark--pulse': pulse }]"
@@ -50,8 +60,13 @@ const s = computed(() => sizeMap[props.size])
         stroke-linecap="round"
         stroke-linejoin="round"
         class="logo__icon"
+        :class="{ 'logo__icon--beat': hasHovered }"
       >
-        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+        <path
+          :key="'logo-ecg-' + beatKey"
+          d="M22 12h-4l-3 9L9 3l-3 9H2"
+          pathLength="46"
+        />
       </svg>
       <span v-if="pulse" class="logo__sweep" aria-hidden="true" />
     </div>
@@ -82,6 +97,7 @@ const s = computed(() => sizeMap[props.size])
     position: relative;
     overflow: hidden;
     flex-shrink: 0;
+    transition: box-shadow 0.35s cubic-bezier(0.25, 1, 0.5, 1);
 
     &--gradient {
       background: linear-gradient(135deg, var(--emerald-400), var(--teal-500), var(--cyan-600));
@@ -104,7 +120,23 @@ const s = computed(() => sizeMap[props.size])
     }
   }
 
-  &__icon { position: relative; z-index: 1; }
+  &__icon {
+    position: relative;
+    z-index: 1;
+
+    path {
+      stroke-dasharray: 46;
+      stroke-dashoffset: 0;
+    }
+
+    &--beat path {
+      animation: logo-ecg-beat 0.55s cubic-bezier(0.25, 1, 0.5, 1) both;
+    }
+  }
+
+  &:hover &__mark {
+    box-shadow: 0 8px 32px -6px rgb(16 185 129 / 0.55);
+  }
 
   &__sweep {
     position: absolute;
@@ -156,5 +188,19 @@ const s = computed(() => sizeMap[props.size])
   15%  { opacity: 1; }
   85%  { opacity: 1; }
   100% { transform: translateX(-140%); opacity: 0; }
+}
+
+@keyframes logo-ecg-beat {
+  0% { stroke-dashoffset: 46; }
+  100% { stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo__icon--beat path {
+    animation: none;
+  }
+  .logo__sweep {
+    animation: none;
+  }
 }
 </style>

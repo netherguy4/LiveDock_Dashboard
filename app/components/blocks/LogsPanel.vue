@@ -145,32 +145,14 @@ onMounted(() => {
   })
 })
 
-let scrollTimer: ReturnType<typeof setTimeout> | null = null
-
 watch(filteredLines, () => {
-  if (scrollTimer) {
-    clearTimeout(scrollTimer)
-  }
+  if (!ui.logsAutoScroll) return
 
-  const el = scroller.value
-  if (!el) return
-
-  const prevHeight = el.scrollHeight
-  const prevTop = el.scrollTop
-  const wasAtBottom = prevHeight - prevTop - el.clientHeight < 80
-
-  scrollTimer = setTimeout(() => {
-    scrollTimer = null
-    const s = scroller.value
-    if (!s) return
-
-    if (wasAtBottom) {
-      s.scrollTop = s.scrollHeight
-      if (!ui.logsAutoScroll) ui.logsAutoScroll = true
-    } else {
-      s.scrollTop = prevTop
+  nextTick(() => {
+    if (scroller.value) {
+      scroller.value.scrollTop = scroller.value.scrollHeight
     }
-  }, 20)
+  })
 })
 
 function onScroll() {
@@ -182,7 +164,9 @@ function onScroll() {
 
 function jumpToBottom() {
   ui.logsAutoScroll = true
-  if (scroller.value) scroller.value.scrollTop = scroller.value.scrollHeight
+  nextTick(() => {
+    if (scroller.value) scroller.value.scrollTop = scroller.value.scrollHeight
+  })
 }
 
 function pickContainer(id: string) {

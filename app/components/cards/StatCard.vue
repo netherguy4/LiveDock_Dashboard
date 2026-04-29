@@ -28,6 +28,7 @@ interface Props {
   trend?: number | null
   palette?: Palette
   loading?: boolean
+  historyLoading?: boolean
   error?: string
 }
 
@@ -43,6 +44,7 @@ const props = withDefaults(defineProps<Props>(), {
   trend: null,
   palette: 'auto',
   loading: false,
+  historyLoading: false,
   error: undefined,
 })
 
@@ -116,8 +118,9 @@ const trendTone = computed<'success' | 'warn'>(() =>
 
       <div v-if="sublabel" class="stat-card__sub">{{ sublabel }}</div>
 
+      <div v-if="historyLoading" class="stat-card__skeleton-spark" />
       <Sparkline
-        v-if="series.length > 1"
+        v-else-if="series.length > 1"
         class="stat-card__spark"
         :values="series"
         :color="colors.stroke"
@@ -202,13 +205,13 @@ const trendTone = computed<'success' | 'warn'>(() =>
     border-radius: var(--radius-md);
   }
   &__skeleton-label {
-    @include skeleton(13px, 64px);
+    @include skeleton(20px, 64px);
   }
   &__skeleton-value {
-    @include skeleton(28px, 120px);
+    @include skeleton(31px, 120px);
   }
   &__skeleton-sub {
-    @include skeleton(12px, 80px);
+    @include skeleton(17px, 80px);
   }
   &__skeleton-spark {
     margin-top: auto;

@@ -151,28 +151,28 @@ function spark(val: number, salt: string): number[] {
         :loading="containers.loading"
         :error="containers.error ?? undefined"
       />
-      <StatCard
-        title="Net RX"
-        :icon="Network"
-        :value="(((c.stat?.net_rx_bps ?? 0) / 1024 / 1024)).toFixed(1)"
-        unit="MB/s"
-        :series="spark((c.stat?.net_rx_bps ?? 0) / 1024 / 1024, `n-${c.name}`)"
-        tone="ok"
-        palette="net"
-        :loading="containers.loading"
-        :error="containers.error ?? undefined"
-      />
-      <StatCard
-        title="Net TX"
-        :icon="Network"
-        :value="(((c.stat?.net_tx_bps ?? 0) / 1024 / 1024)).toFixed(1)"
-        unit="MB/s"
-        :series="spark((c.stat?.net_tx_bps ?? 0) / 1024 / 1024, `t-${c.name}`)"
-        tone="ok"
-        palette="net"
-        :loading="containers.loading"
-        :error="containers.error ?? undefined"
-      />
+       <StatCard
+         title="Network In"
+         :icon="Network"
+         :value="(((c.stat?.net_rx_bps ?? 0) / 1024 / 1024)).toFixed(1)"
+         unit="MB/s"
+         :series="spark((c.stat?.net_rx_bps ?? 0) / 1024 / 1024, `n-${c.name}`)"
+         tone="ok"
+         palette="net"
+         :loading="containers.loading"
+         :error="containers.error ?? undefined"
+       />
+       <StatCard
+         title="Network Out"
+         :icon="Network"
+         :value="(((c.stat?.net_tx_bps ?? 0) / 1024 / 1024)).toFixed(1)"
+         unit="MB/s"
+         :series="spark((c.stat?.net_tx_bps ?? 0) / 1024 / 1024, `t-${c.name}`)"
+         tone="ok"
+         palette="net"
+         :loading="containers.loading"
+         :error="containers.error ?? undefined"
+       />
     </div>
   </div>
 
