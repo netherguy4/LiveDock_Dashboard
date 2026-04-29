@@ -22,6 +22,11 @@ const submitting = ref(false)
 const submitError = ref('')
 const showPwd = ref(false)
 const lit = ref(1)
+const isTouch = ref(false)
+
+onMounted(() => {
+  isTouch.value = window.matchMedia('(hover: none) and (pointer: coarse)').matches
+})
 
 const { handleSubmit, errors } = useForm({
   validationSchema: toTypedSchema(loginSchema),
@@ -57,6 +62,7 @@ const setLocalVars = (el: HTMLElement | null, x: number, y: number) => {
 }
 
 function onMouseMove(e: MouseEvent) {
+  if (isTouch.value) return
   if (raf != null) return
   raf = requestAnimationFrame(() => {
     raf = null
@@ -79,8 +85,8 @@ function onMouseMove(e: MouseEvent) {
     class="login-screen"
     :style="{ '--lit': lit }"
     @mousemove="onMouseMove"
-    @mouseenter="lit = 1"
-    @mouseleave="lit = 0"
+    @mouseenter="!isTouch && (lit = 1)"
+    @mouseleave="!isTouch && (lit = 0)"
   >
     <LoginGridOverlay />
 
