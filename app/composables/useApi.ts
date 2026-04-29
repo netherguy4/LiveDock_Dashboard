@@ -69,6 +69,16 @@ export type HistoryPoint = {
   load15: number
 }
 
+export type ContainerHistoryPoint = {
+  ts: string
+  cpu: number
+  mem: number
+  mem_used: number
+  mem_limit: number
+  net_rx_bps: number
+  net_tx_bps: number
+}
+
 export type ContainerAction = 'start' | 'stop' | 'restart'
 
 export type LogsResponse = {
@@ -116,6 +126,11 @@ export const useApi = () => {
     history: (minutes = 15) =>
       $fetch<HistoryPoint[]>('/api/history', { query: { minutes }, headers: headers() }),
     containers: () => $fetch<ContainerRow[]>('/api/containers', { headers: headers() }),
+    containerHistory: (id: string, minutes = 15) =>
+      $fetch<ContainerHistoryPoint[]>(`/api/containers/${encodeURIComponent(id)}/history`, {
+        query: { minutes },
+        headers: headers(),
+      }),
     logs: (id: string, opts: { tail?: number; since?: number } = {}) =>
       $fetch<LogsResponse>(`/api/containers/${encodeURIComponent(id)}/logs`, {
         query: { tail: opts.tail ?? 200, since: opts.since },

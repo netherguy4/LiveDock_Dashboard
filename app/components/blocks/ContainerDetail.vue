@@ -11,8 +11,26 @@ import StatCard from '~/components/cards/StatCard.vue'
 import { CONTAINER_STATUS, normalizeContainerState } from '~/constants/status'
 import { ROUTES } from '~/configs/routes.config'
 import { useContainersStore } from '~/stores/containers.store'
+import { useUiStore } from '~/stores/ui.store'
 import { humanBytes } from '~/utils/format'
-import type { ContainerAction } from '~/composables/useApi'
+import { POLLING } from '~/configs/polling.config'
+import type { ContainerAction, ContainerHistoryPoint } from '~/composables/useApi'
+
+function bpsFormat(n: number | undefined | null): { value: string; unit: string } {
+  if (n == null || !Number.isFinite(n) || n < 0) return { value: '—', unit: '' }
+  const units = ['B/s', 'KB/s', 'MB/s', 'GB/s', 'TB/s']
+  let i = 0
+  let v = n
+  while (v >= 1024 && i < units.length - 1) {
+    v /= 1024
+    i++
+  }
+  return { value: v.toFixed(1), unit: units[i]! }
+}
+function bpsFactor(unit: string): number {
+  const idx = ['B/s', 'KB/s', 'MB/s', 'GB/s', 'TB/s'].indexOf(unit)
+  return idx < 0 ? 1 : 1024 ** idx
+}
 
 const props = defineProps<{ name: string }>()
 const containers = useContainersStore()
@@ -50,29 +68,66 @@ async function action(a: ContainerAction) {
 
 const memValue = computed(() => (c.value?.stat ? humanBytes(c.value.stat.mem_used, 0).split(' ')[0] ?? '—' : '—'))
 const memUnit = computed(() => (c.value?.stat ? humanBytes(c.value.stat.mem_used, 0).split(' ')[1] ?? '' : ''))
-const memSeries = computed(() => {
-  const raw = c.value?.stat?.mem_used ?? 0
-  const u = memUnit.value
-  const powers: Record<string, number> = { B: 1, KB: 1024, MB: 1024 ** 2, GB: 1024 ** 3, TB: 1024 ** 4 }
-  return spark(raw / (powers[u] ?? 1), `m-${c.value?.name ?? ''}`)
-})
 
-// Synthesize a per-container series from current values; replace with
-// real per-container history when the backend exposes it. The spread
-// is capped at a conservative fraction of the base value to keep the
-// fake sparkline from misleading.
-function spark(val: number, salt: string): number[] {
-  const seed = [...salt].reduce((s, ch) => s + ch.charCodeAt(0), 0)
-  const out: number[] = []
-  let s = seed
-  const spread = Math.max(0.5, Math.min(val * 0.06, 3))
-  for (let i = 0; i < 13; i++) {
-    s = (s * 9301 + 49297) % 233280
-    const r = s / 233280
-    out.push(Math.max(0, val + (r - 0.5) * spread * 2))
+const ui = useUiStore()
+const history = ref<ContainerHistoryPoint[]>([])
+let pollTimer: ReturnType<typeof setInterval> | null = null
+
+async function fetchHistory(id: string) {
+  try {
+    history.value = await useApi().containerHistory(id)
+  } catch {
+    // keep last value on transient errors
   }
-  return out
 }
+
+function startPolling(id: string) {
+  stopPolling()
+  void fetchHistory(id)
+  // Match the host history cadence so per-container charts move in lockstep
+  // with the main page (avoids visual jitter from a faster sub-poll).
+  const period = Math.max(POLLING.HISTORY_MIN_MS, ui.intervalMs * POLLING.HISTORY_EVERY)
+  pollTimer = setInterval(() => void fetchHistory(id), period)
+}
+
+function stopPolling() {
+  if (pollTimer) {
+    clearInterval(pollTimer)
+    pollTimer = null
+  }
+}
+
+watch(
+  () => c.value?.id,
+  (id) => {
+    history.value = []
+    if (id) startPolling(id)
+    else stopPolling()
+  },
+  { immediate: true },
+)
+watch(() => ui.intervalMs, () => {
+  if (c.value?.id) startPolling(c.value.id)
+})
+onUnmounted(stopPolling)
+
+const memUnitDivisor = computed(() => {
+  const powers: Record<string, number> = { B: 1, KB: 1024, MB: 1024 ** 2, GB: 1024 ** 3, TB: 1024 ** 4 }
+  return powers[memUnit.value] ?? 1
+})
+const cpuSeries = computed(() => history.value.map((p) => p.cpu))
+const memSeries = computed(() => history.value.map((p) => p.mem_used / memUnitDivisor.value))
+
+const netRxFmt = computed(() => bpsFormat(c.value?.stat?.net_rx_bps ?? 0))
+const netTxFmt = computed(() => bpsFormat(c.value?.stat?.net_tx_bps ?? 0))
+const netRxSeries = computed(() => {
+  const f = bpsFactor(netRxFmt.value.unit)
+  return history.value.map((p) => p.net_rx_bps / f)
+})
+const netTxSeries = computed(() => {
+  const f = bpsFactor(netTxFmt.value.unit)
+  return history.value.map((p) => p.net_tx_bps / f)
+})
 </script>
 
 <template>
@@ -134,7 +189,7 @@ function spark(val: number, salt: string): number[] {
         :value="Math.round(c.stat?.cpu ?? 0).toString()"
         unit="%"
         :pct="c.stat?.cpu ?? 0"
-        :series="spark(c.stat?.cpu ?? 5, c.name)"
+        :series="cpuSeries"
         palette="cpu"
         :loading="containers.loading"
         :error="containers.error ?? undefined"
@@ -154,9 +209,9 @@ function spark(val: number, salt: string): number[] {
        <StatCard
          title="Network In"
          :icon="Network"
-         :value="(((c.stat?.net_rx_bps ?? 0) / 1024 / 1024)).toFixed(1)"
-         unit="MB/s"
-         :series="spark((c.stat?.net_rx_bps ?? 0) / 1024 / 1024, `n-${c.name}`)"
+         :value="netRxFmt.value"
+         :unit="netRxFmt.unit"
+         :series="netRxSeries"
          tone="ok"
          palette="net"
          :loading="containers.loading"
@@ -165,9 +220,9 @@ function spark(val: number, salt: string): number[] {
        <StatCard
          title="Network Out"
          :icon="Network"
-         :value="(((c.stat?.net_tx_bps ?? 0) / 1024 / 1024)).toFixed(1)"
-         unit="MB/s"
-         :series="spark((c.stat?.net_tx_bps ?? 0) / 1024 / 1024, `t-${c.name}`)"
+         :value="netTxFmt.value"
+         :unit="netTxFmt.unit"
+         :series="netTxSeries"
          tone="ok"
          palette="net"
          :loading="containers.loading"

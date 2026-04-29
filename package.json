@@ -14,7 +14,11 @@
     "generate": "nuxt generate",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "postinstall": "nuxt prepare"
+    "lint:style": "stylelint \"**/*.scss\"",
+    "test:unit": "vitest",
+    "test:e2e": "playwright test",
+    "postinstall": "nuxt prepare",
+    "prepare": "husky"
   },
   "dependencies": {
     "@pinia/nuxt": "^0.11.3",
@@ -35,10 +39,23 @@
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.15.2",
+    "@nuxt/test-utils": "^4.0.3",
+    "@playwright/test": "^1.59.1",
     "@types/node": "^25.6.0",
+    "@vitest/coverage-v8": "^4.1.5",
     "eslint": "^10.2.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "playwright": "^1.59.1",
     "prettier": "^3.4.2",
     "sass-embedded": "^1.83.4",
-    "typescript": "^6.0.3"
+    "stylelint": "^17.9.1",
+    "stylelint-config-standard-scss": "^17.0.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
+  },
+  "lint-staged": {
+    "*.{js,ts,vue}": "eslint --fix",
+    "*.scss": "stylelint --fix"
   }
 }

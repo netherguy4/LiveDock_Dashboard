@@ -31,3 +31,9 @@
 2. **Стиль**: Setup, Pinia, BEM, `useApi()`. Без комментариев (без явного запроса).
 3. **Ограничения**: Тестов нет. Не трогай `.claude/`.
 4. **Проверка**: После правок запускай `yarn lint`.
+
+## Testing and Quality
+- **Unit/Component:** `yarn test:unit`
+- **E2E:** `yarn test:e2e`
+- **Linting:** `yarn lint` (ESLint), `yarn lint:style` (Stylelint)
+- **Hooks:** Husky runs `lint-staged` pre-commit.

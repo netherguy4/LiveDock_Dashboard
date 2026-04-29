@@ -58,11 +58,19 @@ function runTick() {
 
 watch([() => ui.intervalMs, polling], start, { immediate: false })
 
+// Keep the containers store in sync with each snapshot globally — pages that
+// don't mount ContainersPanel (e.g. /containers/[name]) still need fresh stats.
+watch(
+  () => metrics.snapshot?.containers,
+  (next) => { if (next) containers.syncFromSnapshot(next) },
+  { immediate: true },
+)
+
 // Load data when hosts exist and we're past the login page.
 // /login guard prevents 401s — all API calls would fail during auth.
 watch(
   () => [hosts.isEmpty, route.path, hosts.activeId] as const,
-  ([empty, path, activeId]) => {
+  ([empty, path, _activeId]) => {
     tickN = 0
     if (empty || path === '/login') return
     void metrics.refreshSnapshot()
