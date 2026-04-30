@@ -34,7 +34,9 @@ export default defineEventHandler(async (event) => {
         ? 'Authentication failed — check the token'
         : e?.cause?.code === 'ECONNREFUSED' || e?.cause?.code === 'ENOTFOUND'
           ? 'Host is unreachable'
-          : e?.message || 'Could not reach host'
+          : e?.message?.includes('fetch failed')
+            ? 'Host is unreachable or connection timed out'
+            : e?.message || 'Could not reach host'
 
     return { ok: false, error: msg }
   }

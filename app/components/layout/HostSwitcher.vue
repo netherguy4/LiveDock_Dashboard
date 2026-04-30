@@ -26,12 +26,27 @@ function pick(id: string) {
   open.value = false
 }
 
-// ---- Add host dialog ----------------------------------------------------
-const draft = reactive({ name: '', url: '', token: '' })
+// ---- Add/Edit host dialog ----------------------------------------------------
+const draft = reactive({ id: '', name: '', url: '', token: '' })
+const isEditing = computed(() => !!draft.id)
 const validating = ref(false)
 const pingError = ref<string | null>(null)
-function resetDraft() { draft.name = ''; draft.url = ''; draft.token = ''; pingError.value = null }
-async function submitAdd() {
+function resetDraft() { draft.id = ''; draft.name = ''; draft.url = ''; draft.token = ''; pingError.value = null }
+
+function openAddDialog() {
+  resetDraft()
+  hosts.setAddDialogOpen(true)
+}
+function openEditDialog(h: LocalHost) {
+  draft.id = h.id
+  draft.name = h.name
+  draft.url = h.url ?? ''
+  draft.token = h.token ?? ''
+  pingError.value = null
+  hosts.setAddDialogOpen(true)
+}
+
+async function submitHost() {
   if (!draft.name.trim() || !draft.url.trim()) return
   validating.value = true
   pingError.value = null
@@ -47,11 +62,21 @@ async function submitAdd() {
   } finally {
     validating.value = false
   }
-  hosts.add({
-    name: draft.name.trim(),
-    url: draft.url.trim(),
-    token: draft.token.trim() || undefined,
-  })
+
+  if (isEditing.value) {
+    hosts.update(draft.id, {
+      name: draft.name.trim(),
+      url: draft.url.trim(),
+      token: draft.token.trim() || undefined,
+    })
+  } else {
+    hosts.add({
+      name: draft.name.trim(),
+      url: draft.url.trim(),
+      token: draft.token.trim() || undefined,
+    })
+  }
+  
   resetDraft()
   hosts.setAddDialogOpen(false)
 }
@@ -59,7 +84,7 @@ async function submitAdd() {
 watch(() => hosts.addDialogOpen, (v) => {
   if (typeof document === 'undefined') return
   document.body.style.overflow = v ? 'hidden' : ''
-  if (v) pingError.value = null
+  if (!v) resetDraft()
 })
 </script>
 
@@ -117,6 +142,15 @@ watch(() => hosts.addDialogOpen, (v) => {
               v-if="!h.current"
               type="button"
               class="host-switcher__remove"
+              title="Edit host"
+              @click.stop="openEditDialog(h)"
+            >
+              <Edit3 :size="14" />
+            </button>
+            <button
+              v-if="!h.current"
+              type="button"
+              class="host-switcher__remove"
               title="Remove host"
               @click.stop="hosts.remove(h.id)"
             >
@@ -128,7 +162,7 @@ watch(() => hosts.addDialogOpen, (v) => {
         <button
           type="button"
           class="host-switcher__add"
-          @click="hosts.setAddDialogOpen(true); open = false"
+          @click="openAddDialog(); open = false"
         >
           <Plus :size="16" />
           <span>Add new host</span>
@@ -147,15 +181,15 @@ watch(() => hosts.addDialogOpen, (v) => {
           <div class="host-modal__card" @click.stop>
             <div class="host-modal__head">
               <span class="host-modal__title">
-                <Plus :size="16" />
-                Add API host
+                <component :is="isEditing ? Edit3 : Plus" :size="16" />
+                {{ isEditing ? 'Edit API host' : 'Add API host' }}
               </span>
               <button type="button" class="host-modal__close" @click="hosts.setAddDialogOpen(false)">
                 <X :size="16" />
               </button>
             </div>
 
-            <form class="host-modal__body" @submit.prevent="submitAdd">
+            <form class="host-modal__body" @submit.prevent="submitHost">
               <label class="host-modal__field">
                 <span class="host-modal__label">Display name</span>
                 <span class="host-modal__wrap">
@@ -163,6 +197,7 @@ watch(() => hosts.addDialogOpen, (v) => {
                   <input
                     v-model="draft.name"
                     autofocus
+                    autocomplete="off"
                     placeholder="Production EU"
                     class="host-modal__input"
                   >
@@ -175,6 +210,7 @@ watch(() => hosts.addDialogOpen, (v) => {
                   <Globe :size="16" class="host-modal__icon" />
                   <input
                     v-model="draft.url"
+                    autocomplete="off"
                     placeholder="https://10.0.0.10:2376"
                     class="host-modal__input host-modal__input--mono"
                   >
@@ -190,9 +226,10 @@ watch(() => hosts.addDialogOpen, (v) => {
                   <KeyRound :size="16" class="host-modal__icon" />
                   <input
                     v-model="draft.token"
-                    type="password"
+                    type="text"
+                    autocomplete="off"
                     placeholder="••••••••"
-                    class="host-modal__input host-modal__input--mono"
+                    class="host-modal__input host-modal__input--mono host-modal__input--token"
                   >
                 </span>
               </label>
@@ -205,8 +242,8 @@ watch(() => hosts.addDialogOpen, (v) => {
                   :disabled="!draft.name.trim() || !draft.url.trim() || validating"
                 >
                   <span v-if="validating" class="host-modal__spinner" />
-                  <Plus v-else :size="14" />
-                  {{ validating ? 'Checking…' : 'Add host' }}
+                  <component :is="isEditing ? Check : Plus" v-else :size="14" />
+                  {{ validating ? 'Checking…' : (isEditing ? 'Save changes' : 'Add host') }}
                 </button>
               </div>
             </form>
@@ -496,6 +533,7 @@ watch(() => hosts.addDialogOpen, (v) => {
     &::placeholder { color: var(--color-subtle-foreground); }
     &:focus { outline: none; border-color: var(--emerald-500); box-shadow: 0 0 0 3px rgb(16 185 129 / 0.20); }
     &--mono { font-family: $font-stack-mono; }
+    &--token { -webkit-text-security: disc; }
     &--has-error { border-color: var(--red-400); }
   }
 

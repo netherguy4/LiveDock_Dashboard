@@ -57,6 +57,16 @@ export const useHostsStore = defineStore('hosts', {
     setAddDialogOpen(v: boolean) {
       this.addDialogOpen = v
     },
+    update(id: string, h: { name: string; url: string; token?: string }) {
+      const index = this.items.findIndex((item) => item.id === id)
+      if (index !== -1) {
+        this.items[index] = { ...this.items[index], name: h.name, url: h.url, token: h.token }
+      }
+      const extraIndex = this.localExtras.findIndex((item) => item.id === id)
+      if (extraIndex !== -1) {
+        this.localExtras[extraIndex] = { ...this.localExtras[extraIndex], name: h.name, url: h.url, token: h.token }
+      }
+    },
   },
 
   persist: [
