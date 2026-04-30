@@ -31,11 +31,11 @@
 2. **Запрещено:** создавать git worktree. Вообще. Даже через плагины/скиллы. Работать только в текущей рабочей директории.
 3. **Стиль**: Setup, Pinia, BEM, `useApi()`. Без комментариев (без явного запроса).
 4. **Ограничения**: Не трогай `.claude/`.
-5. **Проверка**: После правок запускай `yarn lint` (ESLint) и `yarn lint:style` (Stylelint).
+5. **Проверка**: После правок запускай `pnpm lint` (ESLint) и `pnpm lint:style` (Stylelint).
 
 ## Testing and Quality
 
-- **Unit/Component:** `yarn test:unit`
-- **E2E:** `yarn test:e2e`
-- **Linting:** `yarn lint` (ESLint), `yarn lint:style` (Stylelint)
+- **Unit/Component:** `pnpm test:unit`
+- **E2E:** `pnpm test:e2e`
+- **Linting:** `pnpm lint` (ESLint), `pnpm lint:style` (Stylelint)
 - **Hooks:** Husky runs `lint-staged` pre-commit.

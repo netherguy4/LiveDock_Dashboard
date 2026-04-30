@@ -1,15 +1,6 @@
 # ── Dependencies ────────────────────────────────────────────────────────────
 node_modules/
 
-# ── Yarn 4 (nodeLinker: node-modules) ───────────────────────────────────────
-# .yarn/releases  → keep (Yarn binary, should be committed)
-# .yarn/plugins   → keep (installed plugins)
-# yarn.lock       → keep (lockfile must be committed)
-.yarn/cache
-.yarn/install-state.gz
-.pnp.cjs
-.pnp.loader.mjs
-
 # ── Nuxt build artefacts ─────────────────────────────────────────────────────
 .nuxt/
 .output/
