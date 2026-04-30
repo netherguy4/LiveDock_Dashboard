@@ -110,10 +110,10 @@ onMounted(() => {
       >
         <span class="users-page__login">
           <UserRound :size="16" />
-          {{ user.login }}
+          <span class="users-page__login-text">{{ user.login }}</span>
         </span>
-        <span>{{ new Date(user.createdAt).toLocaleString() }}</span>
-        <span>{{ new Date(user.updatedAt).toLocaleString() }}</span>
+        <span class="users-page__meta" data-label="Created">{{ new Date(user.createdAt).toLocaleString() }}</span>
+        <span class="users-page__meta" data-label="Updated">{{ new Date(user.updatedAt).toLocaleString() }}</span>
         <span class="users-page__actions">
           <button type="button" class="users-page__icon" title="Edit user" @click="openEdit(user)">
             <Edit3 :size="15" />
@@ -237,6 +237,10 @@ onMounted(() => {
     border-radius: var(--radius-xl);
     background: var(--color-card);
     overflow: hidden;
+
+    @include until($bp-md) {
+      border-radius: var(--radius-lg);
+    }
   }
 
   &__row {
@@ -267,11 +271,16 @@ onMounted(() => {
     }
 
     @include until($bp-md) {
-      grid-template-columns: 1fr;
-      align-items: flex-start;
+      grid-template-columns: 1fr auto;
+      gap: var(--space-2) var(--space-3);
+      min-height: 0;
       padding: var(--space-3) var(--space-4);
 
       &--head { display: none; }
+
+      &--skeleton {
+        grid-template-columns: 1fr auto;
+      }
     }
   }
 
@@ -285,6 +294,41 @@ onMounted(() => {
   &__login {
     color: var(--color-foreground);
     font-weight: 700;
+    min-width: 0;
+
+    @include until($bp-md) {
+      grid-column: 1;
+      grid-row: 1;
+    }
+  }
+
+  &__login-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__meta {
+    @include until($bp-md) {
+      display: grid;
+      grid-template-columns: 64px minmax(0, 1fr);
+      grid-column: 1 / -1;
+      gap: var(--space-2);
+      font-family: $font-stack-mono;
+      font-size: 11px;
+      line-height: 1.45;
+
+      &::before {
+        content: attr(data-label);
+        color: var(--color-subtle-foreground);
+        font-family: $font-stack-sans;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+    }
   }
 
   &__sk-user,
@@ -296,6 +340,11 @@ onMounted(() => {
 
   &__sk-actions {
     justify-content: flex-end;
+
+    @include until($bp-md) {
+      grid-column: 2;
+      grid-row: 1;
+    }
   }
 
   &__sk-avatar,
@@ -328,11 +377,23 @@ onMounted(() => {
 
     &--date {
       width: min(168px, 48vw);
+
+      @include until($bp-md) {
+        grid-column: 1 / -1;
+        width: min(220px, 66vw);
+        margin-left: 72px;
+      }
     }
   }
 
   &__actions {
     justify-content: flex-end;
+
+    @include until($bp-md) {
+      grid-column: 2;
+      grid-row: 1;
+      align-self: center;
+    }
   }
 
   &__icon {
