@@ -5,6 +5,7 @@ import {
   Wifi, WifiOff, AlertCircle,
 } from 'lucide-vue-next'
 import { useHostsStore } from '~/stores/hosts.store'
+import type { LocalHost } from '~/stores/hosts.store'
 
 const hosts = useHostsStore()
 const open = ref(false)
@@ -82,7 +83,7 @@ function openEditDialog(h: LocalHost) {
   draft.id = h.id
   draft.name = h.name
   draft.url = h.url ?? ''
-  draft.token = h.token ?? ''
+  draft.token = ''
   pingError.value = null
   hosts.setAddDialogOpen(true)
 }
@@ -105,13 +106,13 @@ async function submitHost() {
   }
 
   if (isEditing.value) {
-    hosts.update(draft.id, {
+    await hosts.update(draft.id, {
       name: draft.name.trim(),
       url: draft.url.trim(),
       token: draft.token.trim() || undefined,
     })
   } else {
-    hosts.add({
+    await hosts.add({
       name: draft.name.trim(),
       url: draft.url.trim(),
       token: draft.token.trim() || undefined,
@@ -120,6 +121,10 @@ async function submitHost() {
   
   resetDraft()
   hosts.setAddDialogOpen(false)
+}
+
+async function removeHost(id: string) {
+  await hosts.remove(id)
 }
 
 watch(() => hosts.addDialogOpen, (v) => {
@@ -200,7 +205,7 @@ watch(() => hosts.addDialogOpen, (v) => {
               type="button"
               class="host-switcher__remove"
               title="Remove host"
-              @click.stop="hosts.remove(h.id)"
+              @click.stop="removeHost(h.id)"
             >
               <Trash2 :size="14" />
             </button>

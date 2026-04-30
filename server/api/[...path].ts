@@ -1,28 +1,26 @@
-// Catch-all proxy from `/api/*` (browser) → upstream Go backend.
-// Auth is enforced by server/middleware/auth.ts before we get here, so we
-// only need to attach the Bearer token to the upstream request.
-//
-// Multi-host: the browser sets X-Mon-Url and optionally X-Mon-Token.
-// Both headers are required for the proxy to forward.
-//
-// Specific routes like /api/login, /api/logout, /api/me have their own files
-// and take precedence over this catch-all.
+import { requireUser } from '../utils/auth-subject'
+import { useAppStorage } from '../utils/storage'
 
 export default defineEventHandler(async (event) => {
   const path = getRouterParam(event, 'path') || ''
   const query = getQuery(event)
   const method = event.method
+  const session = requireUser(event)
 
-  const monUrl = getRequestHeader(event, 'x-mon-url') || ''
-  const monToken = getRequestHeader(event, 'x-mon-token') || ''
-
-  if (!monUrl) {
+  const hostId = getRequestHeader(event, 'x-mon-host-id') || ''
+  if (!hostId) {
     setResponseStatus(event, 400)
-    return { error: 'missing x-mon-url header' }
+    return { error: 'missing x-mon-host-id header' }
   }
 
-  const baseUrl = monUrl
-  const token = monToken
+  const hostConfig = await useAppStorage().getHost(session.userId, hostId)
+  if (!hostConfig) {
+    setResponseStatus(event, 404)
+    return { error: 'host not found' }
+  }
+
+  const baseUrl = hostConfig.url
+  const token = hostConfig.token ?? ''
 
   let url: URL
   try {

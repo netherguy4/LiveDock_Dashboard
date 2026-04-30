@@ -35,7 +35,7 @@ async function logout() {
     </div>
 
     <div class="app-header__right">
-      <HostSwitcher />
+      <HostSwitcher v-if="auth.kind === 'user'" />
       <ThemeToggle />
       <button type="button" class="app-header__logout" @click="logout">
         <LogOut :size="14" />

@@ -23,78 +23,78 @@ describe('useApi', () => {
   }
 
   it('calls snapshot with correct headers', async () => {
-    setupHost({ url: 'http://test.host', token: 'test-token' })
+    setupHost({ id: 'h1' })
     const api = useApi()
     await api.snapshot()
 
     expect(mockFetch).toHaveBeenCalledWith('/api/snapshot', {
-      headers: { 'X-Mon-Url': 'http://test.host', 'X-Mon-Token': 'test-token' },
+      headers: { 'X-Mon-Host-Id': 'h1' },
     })
   })
 
   it('calls history with correct query and headers', async () => {
-    setupHost({ url: 'http://test.host', token: 'test-token' })
+    setupHost({ id: 'h1' })
     const api = useApi()
     await api.history(30)
 
     expect(mockFetch).toHaveBeenCalledWith('/api/history', {
       query: { minutes: 30 },
-      headers: { 'X-Mon-Url': 'http://test.host', 'X-Mon-Token': 'test-token' },
+      headers: { 'X-Mon-Host-Id': 'h1' },
     })
   })
 
   it('calls containers with correct headers', async () => {
-    setupHost({ url: 'http://test.host', token: 'test-token' })
+    setupHost({ id: 'h1' })
     const api = useApi()
     await api.containers()
 
     expect(mockFetch).toHaveBeenCalledWith('/api/containers', {
-      headers: { 'X-Mon-Url': 'http://test.host', 'X-Mon-Token': 'test-token' },
+      headers: { 'X-Mon-Host-Id': 'h1' },
     })
   })
 
   it('calls containerHistory with correct parameters', async () => {
-    setupHost({ url: 'http://test.host', token: 'test-token' })
+    setupHost({ id: 'h1' })
     const api = useApi()
     await api.containerHistory('test-id', 60)
 
     expect(mockFetch).toHaveBeenCalledWith('/api/containers/test-id/history', {
       query: { minutes: 60 },
-      headers: { 'X-Mon-Url': 'http://test.host', 'X-Mon-Token': 'test-token' },
+      headers: { 'X-Mon-Host-Id': 'h1' },
     })
   })
 
   it('calls logs with correct parameters', async () => {
-    setupHost({ url: 'http://test.host', token: 'test-token' })
+    setupHost({ id: 'h1' })
     const api = useApi()
     await api.logs('test-id', { tail: 500, since: 12345 })
 
     expect(mockFetch).toHaveBeenCalledWith('/api/containers/test-id/logs', {
       query: { tail: 500, since: 12345 },
-      headers: { 'X-Mon-Url': 'http://test.host', 'X-Mon-Token': 'test-token' },
+      headers: { 'X-Mon-Host-Id': 'h1' },
     })
   })
 
   it('calls action with correct body and headers', async () => {
-    setupHost({ url: 'http://test.host', token: 'test-token' })
+    setupHost({ id: 'h1' })
     const api = useApi()
     await api.action('test-id', 'restart')
 
     expect(mockFetch).toHaveBeenCalledWith('/api/containers/test-id/action', {
       method: 'POST',
       body: { action: 'restart' },
-      headers: { 'X-Mon-Url': 'http://test.host', 'X-Mon-Token': 'test-token' },
+      headers: { 'X-Mon-Host-Id': 'h1' },
     })
   })
 
   it('calls requests with correct query and headers', async () => {
-    setupHost({ url: 'http://test.host', token: 'test-token' })
+    setupHost({ id: 'h1' })
     const api = useApi()
     await api.requests(24)
 
     expect(mockFetch).toHaveBeenCalledWith('/api/requests', {
       query: { hours: 24 },
-      headers: { 'X-Mon-Url': 'http://test.host', 'X-Mon-Token': 'test-token' },
+      headers: { 'X-Mon-Host-Id': 'h1' },
     })
   })
 
@@ -107,6 +107,46 @@ describe('useApi', () => {
       method: 'POST',
       body: { url: 'http://new.host', token: 'new-token' },
     })
+  })
+
+  it('calls host crud endpoints', async () => {
+    const api = useApi()
+
+    await api.hosts()
+    await api.createHost({ name: 'prod', url: 'https://prod.example', token: 'tok' })
+    await api.updateHost('h1', { name: 'prod-2', url: 'https://prod2.example' })
+    await api.deleteHost('h1')
+
+    expect(mockFetch).toHaveBeenCalledWith('/api/hosts')
+    expect(mockFetch).toHaveBeenCalledWith('/api/hosts', {
+      method: 'POST',
+      body: { name: 'prod', url: 'https://prod.example', token: 'tok' },
+    })
+    expect(mockFetch).toHaveBeenCalledWith('/api/hosts/h1', {
+      method: 'PATCH',
+      body: { name: 'prod-2', url: 'https://prod2.example' },
+    })
+    expect(mockFetch).toHaveBeenCalledWith('/api/hosts/h1', { method: 'DELETE' })
+  })
+
+  it('calls admin user endpoints', async () => {
+    const api = useApi()
+
+    await api.adminUsers()
+    await api.createUser({ login: 'alice', password: 'secret' })
+    await api.updateUser('u1', { password: 'new-secret' })
+    await api.deleteUser('u1')
+
+    expect(mockFetch).toHaveBeenCalledWith('/api/admin/users')
+    expect(mockFetch).toHaveBeenCalledWith('/api/admin/users', {
+      method: 'POST',
+      body: { login: 'alice', password: 'secret' },
+    })
+    expect(mockFetch).toHaveBeenCalledWith('/api/admin/users/u1', {
+      method: 'PATCH',
+      body: { password: 'new-secret' },
+    })
+    expect(mockFetch).toHaveBeenCalledWith('/api/admin/users/u1', { method: 'DELETE' })
   })
 
   it('handles fetch rejection', async () => {
@@ -125,4 +165,3 @@ describe('useApi', () => {
     await expect(api.snapshot()).rejects.toThrow('Request failed')
   })
 })
-

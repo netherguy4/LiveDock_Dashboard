@@ -1,24 +1,18 @@
-// Multi-host support. Hosts are managed client-side (persisted in cookies
-// via pinia-plugin-persistedstate). Add/remove update both localExtras and
-// items; afterHydrate merges them on page load.
-// All hosts are user-managed — there is no built-in default host.
-
 import { defineStore } from 'pinia'
-import type { Host } from '~/composables/useApi'
+import type { Host, HostInput } from '~/composables/useApi'
 import { STORAGE_KEYS } from '~/constants/storage-keys'
 
 export type LocalHost = Host & {
   status?: 'online' | 'offline' | 'degraded'
-  url?: string
-  token?: string
 }
 
 export const useHostsStore = defineStore('hosts', {
   state: () => ({
     items: [] as LocalHost[],
     activeId: '' as string,
-    /** Hosts added locally — merged into `items` via afterHydrate */
-    localExtras: [] as LocalHost[],
+    loading: false,
+    saving: false,
+    error: null as string | null,
     addDialogOpen: false,
   }),
 
@@ -32,23 +26,60 @@ export const useHostsStore = defineStore('hosts', {
     select(id: string) {
       this.activeId = id
     },
-    add(h: { name: string; url: string; token?: string }) {
-      const id = `h${Date.now()}`
-      const host: LocalHost = {
-        id,
-        name: h.name,
-        url: h.url,
-        token: h.token,
-        current: false,
-        status: 'online',
-      }
-      this.localExtras.push(host)
-      this.items.push(host)
-      this.activeId = id
+    reset() {
+      this.items = []
+      this.activeId = ''
+      this.loading = false
+      this.saving = false
+      this.error = null
     },
-    remove(id: string) {
+    async load() {
+      this.loading = true
+      try {
+        this.items = await useApi().hosts()
+        if (!this.activeId || !this.items.find((h) => h.id === this.activeId)) {
+          this.activeId = this.items[0]?.id ?? ''
+        }
+        this.error = null
+      } catch (e: unknown) {
+        this.error = e instanceof Error ? e.message : String(e)
+        throw e
+      } finally {
+        this.loading = false
+      }
+    },
+    async add(h: HostInput) {
+      this.saving = true
+      try {
+        const host = await useApi().createHost(h)
+        this.items.push(host)
+        this.activeId = host.id
+        this.error = null
+      } catch (e: unknown) {
+        this.error = e instanceof Error ? e.message : String(e)
+        throw e
+      } finally {
+        this.saving = false
+      }
+    },
+    async remove(id: string) {
+      this.saving = true
+      try {
+        await useApi().deleteHost(id)
+        this.items = this.items.filter((h) => h.id !== id)
+        if (this.activeId === id) {
+          this.activeId = this.items[0]?.id ?? ''
+        }
+        this.error = null
+      } catch (e: unknown) {
+        this.error = e instanceof Error ? e.message : String(e)
+        throw e
+      } finally {
+        this.saving = false
+      }
+    },
+    removeLocal(id: string) {
       this.items = this.items.filter((h) => h.id !== id)
-      this.localExtras = this.localExtras.filter((h) => h.id !== id)
       if (this.activeId === id) {
         this.activeId = this.items[0]?.id ?? ''
       }
@@ -56,33 +87,28 @@ export const useHostsStore = defineStore('hosts', {
     setAddDialogOpen(v: boolean) {
       this.addDialogOpen = v
     },
-    update(id: string, h: { name: string; url: string; token?: string }) {
-      const index = this.items.findIndex((item) => item.id === id)
-      if (index !== -1) {
-        this.items[index] = { ...this.items[index], name: h.name, url: h.url, token: h.token }
-      }
-      const extraIndex = this.localExtras.findIndex((item) => item.id === id)
-      if (extraIndex !== -1) {
-        this.localExtras[extraIndex] = { ...this.localExtras[extraIndex], name: h.name, url: h.url, token: h.token }
+    async update(id: string, h: HostInput) {
+      this.saving = true
+      try {
+        const host = await useApi().updateHost(id, h)
+        const index = this.items.findIndex((item) => item.id === id)
+        if (index !== -1) {
+          this.items[index] = host
+        }
+        this.error = null
+      } catch (e: unknown) {
+        this.error = e instanceof Error ? e.message : String(e)
+        throw e
+      } finally {
+        this.saving = false
       }
     },
   },
 
   persist: [
     {
-      key: STORAGE_KEYS.HOSTS_LOCAL,
-      pick: ['localExtras', 'activeId'],
-      afterHydrate({ store }) {
-        const s = store as ReturnType<typeof useHostsStore>
-        if (!s.localExtras.length) return
-        const ids = new Set(s.items.map((i) => i.id))
-        for (const h of s.localExtras) {
-          if (!ids.has(h.id)) s.items.push(h)
-        }
-        if (!s.activeId || !s.items.find((i) => i.id === s.activeId)) {
-          s.activeId = s.localExtras[0].id
-        }
-      },
+      key: STORAGE_KEYS.HOSTS_ACTIVE,
+      pick: ['activeId'],
     },
   ],
 })

@@ -1,7 +1,3 @@
-// Quick "am I authed?" check used by the auth store on hydration.
-// Public route (the auth middleware lets this one through and just inspects
-// the cookie itself).
-
 import { SESSION_COOKIE, verifySession } from '../utils/session'
 
 export default defineEventHandler((event) => {
@@ -10,6 +6,8 @@ export default defineEventHandler((event) => {
   const session = cfg.sessionSecret ? verifySession(cookie, cfg.sessionSecret) : null
   return {
     authed: Boolean(session),
-    user: session?.user ?? '',
+    user: session?.login ?? '',
+    kind: session?.kind ?? null,
+    userId: session?.kind === 'user' ? session.userId : null,
   }
 })

@@ -5,6 +5,7 @@ export const ROUTES = {
   HOME: '/',
   CONTAINERS: '/containers',
   CONTAINER: (name: string) => `/containers/${encodeURIComponent(name)}`,
+  USERS: '/users',
   LOGIN: '/login',
 } as const
 

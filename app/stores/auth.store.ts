@@ -21,6 +21,8 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     isAuthed: false,
     user: '' as string,
+    kind: null as 'admin' | 'user' | null,
+    userId: null as string | null,
     checking: false,
     error: null as string | null,
   }),
@@ -29,13 +31,22 @@ export const useAuthStore = defineStore('auth', {
     async check() {
       this.checking = true
       try {
-        const res = await authedFetch<{ authed: boolean; user: string }>('/api/me')
+        const res = await authedFetch<{
+          authed: boolean
+          user: string
+          kind: 'admin' | 'user' | null
+          userId: string | null
+        }>('/api/me')
         this.isAuthed = res.authed
         this.user = res.user
+        this.kind = res.kind
+        this.userId = res.userId
         this.error = null
       } catch {
         this.isAuthed = false
         this.user = ''
+        this.kind = null
+        this.userId = null
       } finally {
         this.checking = false
       }
@@ -49,6 +60,9 @@ export const useAuthStore = defineStore('auth', {
         this.error = null
       } catch (e: unknown) {
         this.isAuthed = false
+        this.user = ''
+        this.kind = null
+        this.userId = null
         this.error = e instanceof Error ? e.message : String(e)
         throw e
       }
@@ -60,6 +74,8 @@ export const useAuthStore = defineStore('auth', {
       } finally {
         this.isAuthed = false
         this.user = ''
+        this.kind = null
+        this.userId = null
       }
     },
   },

@@ -12,6 +12,8 @@ describe('authStore', () => {
     const store = useAuthStore()
     expect(store.isAuthed).toBe(false)
     expect(store.user).toBe('')
+    expect(store.kind).toBeNull()
+    expect(store.userId).toBeNull()
     expect(store.checking).toBe(false)
     expect(store.error).toBeNull()
   })
@@ -19,12 +21,14 @@ describe('authStore', () => {
   it('should set isAuthed and user on successful check', async () => {
     const store = useAuthStore()
     const mockFetch = vi.mocked($fetch)
-    mockFetch.mockResolvedValue({ authed: true, user: 'test-user' })
+    mockFetch.mockResolvedValue({ authed: true, user: 'test-user', kind: 'admin', userId: null })
 
     await store.check()
 
     expect(store.isAuthed).toBe(true)
     expect(store.user).toBe('test-user')
+    expect(store.kind).toBe('admin')
+    expect(store.userId).toBeNull()
     expect(store.error).toBeNull()
     expect(store.checking).toBe(false)
   })
@@ -38,6 +42,8 @@ describe('authStore', () => {
 
     expect(store.isAuthed).toBe(false)
     expect(store.user).toBe('')
+    expect(store.kind).toBeNull()
+    expect(store.userId).toBeNull()
     expect(store.checking).toBe(false)
   })
 
@@ -46,12 +52,14 @@ describe('authStore', () => {
     const mockFetch = vi.mocked($fetch)
     // Login succeeds, then check succeeds
     mockFetch.mockResolvedValueOnce({})
-    mockFetch.mockResolvedValueOnce({ authed: true, user: 'test-user' })
+    mockFetch.mockResolvedValueOnce({ authed: true, user: 'test-user', kind: 'user', userId: 'u1' })
 
     await store.login('user', 'pass')
 
     expect(store.isAuthed).toBe(true)
     expect(store.user).toBe('test-user')
+    expect(store.kind).toBe('user')
+    expect(store.userId).toBe('u1')
   })
 
   it('should set error on failed login', async () => {
@@ -62,6 +70,9 @@ describe('authStore', () => {
 
     await expect(store.login('user', 'pass')).rejects.toThrow('Invalid credentials')
     expect(store.isAuthed).toBe(false)
+    expect(store.user).toBe('')
+    expect(store.kind).toBeNull()
+    expect(store.userId).toBeNull()
     expect(store.error).toBe('Invalid credentials')
   })
 
@@ -69,6 +80,8 @@ describe('authStore', () => {
     const store = useAuthStore()
     store.isAuthed = true
     store.user = 'user'
+    store.kind = 'user'
+    store.userId = 'u1'
     const mockFetch = vi.mocked($fetch)
     mockFetch.mockResolvedValue({})
 
@@ -76,5 +89,7 @@ describe('authStore', () => {
 
     expect(store.isAuthed).toBe(false)
     expect(store.user).toBe('')
+    expect(store.kind).toBeNull()
+    expect(store.userId).toBeNull()
   })
 })

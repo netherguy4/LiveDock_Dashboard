@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { ROUTES } from '~/configs/routes.config'
+import { useAuthStore } from '~/stores/auth.store'
 import { useHostsStore } from '~/stores/hosts.store'
 
 const route = useRoute()
+const auth = useAuthStore()
 const hosts = useHostsStore()
 
 const NAV = computed(() => {
   const items = [{ label: 'Dashboard', to: ROUTES.HOME }]
   if (!hosts.isEmpty) items.push({ label: 'Containers', to: ROUTES.CONTAINERS })
+  if (auth.kind === 'admin') items.push({ label: 'Users', to: ROUTES.USERS })
   return items
 })
 

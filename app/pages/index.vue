@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Plus, Server } from 'lucide-vue-next'
+import { Plus, Server, Users } from 'lucide-vue-next'
 import ChartSettingsBar from '~/components/layout/ChartSettingsBar.vue'
 import ContainersPanel from '~/components/blocks/ContainersPanel.vue'
 import HealthOverview from '~/components/blocks/HealthOverview.vue'
@@ -7,9 +7,11 @@ import RequestsChart from '~/components/blocks/RequestsChart.vue'
 import ServerStats from '~/components/blocks/ServerStats.vue'
 import SystemInfo from '~/components/blocks/SystemInfo.vue'
 import { useHostsStore } from '~/stores/hosts.store'
+import { useAuthStore } from '~/stores/auth.store'
 import { useUiStore } from '~/stores/ui.store'
 
 const hosts = useHostsStore()
+const auth = useAuthStore()
 const ui = useUiStore()
 
 definePageMeta({ layout: 'default' })
@@ -111,6 +113,21 @@ useHead({ title: 'LiveDock · Dashboard' })
             <div class="dashboard__sk-panel-num" />
           </div>
         </div>
+      </div>
+    </template>
+    <template v-else-if="auth.kind === 'admin'">
+      <div class="dashboard__empty">
+        <div class="dashboard__empty-icon">
+          <Users :size="48" />
+        </div>
+        <h2 class="dashboard__empty-title">Управление пользователями</h2>
+        <p class="dashboard__empty-desc">
+          Создайте пользователя, чтобы выдать ему отдельный список серверов
+        </p>
+        <NuxtLink class="dashboard__empty-action" to="/users">
+          <Users :size="18" />
+          Открыть пользователей
+        </NuxtLink>
       </div>
     </template>
     <template v-else-if="hosts.isEmpty && !hosts.loading">

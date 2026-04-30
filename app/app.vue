@@ -6,6 +6,7 @@ import { useRequestsStore } from '~/stores/requests.store'
 import { useLogsStore } from '~/stores/logs.store'
 import { useContainersStore } from '~/stores/containers.store'
 import { useUiStore } from '~/stores/ui.store'
+import { useAuthStore } from '~/stores/auth.store'
 
 const Toaster = defineAsyncComponent(() =>
   import('vue-sonner').then((m) => m.Toaster),
@@ -16,10 +17,11 @@ const ui = useUiStore()
 const metrics = useMetricsStore()
 const requests = useRequestsStore()
 const hosts = useHostsStore()
+const auth = useAuthStore()
 const containers = useContainersStore()
 const logs = useLogsStore()
 
-const polling = computed(() => route.path !== '/login' && !ui.paused)
+const polling = computed(() => route.path !== '/login' && auth.kind === 'user' && !ui.paused)
 
 // Client is the single source of truth for hosts — localStorage supplies
 // localExtras, afterHydrate merges them into items, and the watcher below
@@ -69,10 +71,20 @@ watch(
 // Load data when hosts exist and we're past the login page.
 // /login guard prevents 401s — all API calls would fail during auth.
 watch(
-  () => [hosts.isEmpty, route.path, hosts.activeId] as const,
-  ([empty, path, _activeId]) => {
+  () => [auth.kind, auth.isAuthed, route.path] as const,
+  ([kind, authed, path]) => {
+    if (!authed || path === '/login') return
+    if (kind === 'user') void hosts.load()
+    if (kind === 'admin') hosts.reset()
+  },
+  { immediate: true },
+)
+
+watch(
+  () => [hosts.isEmpty, route.path, hosts.activeId, auth.kind] as const,
+  ([empty, path, _activeId, kind]) => {
     tickN = 0
-    if (empty || path === '/login') return
+    if (empty || path === '/login' || kind !== 'user') return
     void metrics.refreshSnapshot()
     void metrics.refreshHistory()
     void requests.refresh()

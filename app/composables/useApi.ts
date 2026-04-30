@@ -98,26 +98,36 @@ export type Host = {
   current: boolean
 }
 
-// hostHeaders attaches the active host's URL/token to a proxied request so the
-// Nuxt server can route to the right backend. Empty if no active host is set.
+export type HostInput = {
+  name: string
+  url: string
+  token?: string
+}
+
+export type ManagedUser = {
+  id: string
+  login: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type UserInput = {
+  login?: string
+  password?: string
+}
+
 function hostHeaders(): Record<string, string> {
-  // Avoid pulling in the store on the server during SSR — the proxy runs on
-  // the server too, so headers are only meaningful for browser-originated calls.
   if (typeof window === 'undefined') return {}
   try {
     const store = useHostsStore()
     const h = store.active
-    if (!h || !h.url) return {}
-    const out: Record<string, string> = { 'X-Mon-Url': h.url }
-    if (h.token) out['X-Mon-Token'] = h.token
-    return out
+    if (!h) return {}
+    return { 'X-Mon-Host-Id': h.id }
   } catch {
     return {}
   }
 }
 
-// Lightweight typed wrapper for $fetch — keeps URLs in one place and avoids
-// repeating `as Foo` casts at call sites.
 export const useApi = () => {
   const headers = () => hostHeaders()
   return {
@@ -148,5 +158,19 @@ export const useApi = () => {
         method: 'POST',
         body: { url, token },
       }),
+    hosts: () => $fetch<Host[]>('/api/hosts'),
+    createHost: (input: HostInput) =>
+      $fetch<Host>('/api/hosts', { method: 'POST', body: input }),
+    updateHost: (id: string, input: HostInput) =>
+      $fetch<Host>(`/api/hosts/${encodeURIComponent(id)}`, { method: 'PATCH', body: input }),
+    deleteHost: (id: string) =>
+      $fetch<{ ok: true }>(`/api/hosts/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+    adminUsers: () => $fetch<ManagedUser[]>('/api/admin/users'),
+    createUser: (input: Required<UserInput>) =>
+      $fetch<ManagedUser>('/api/admin/users', { method: 'POST', body: input }),
+    updateUser: (id: string, input: UserInput) =>
+      $fetch<ManagedUser>(`/api/admin/users/${encodeURIComponent(id)}`, { method: 'PATCH', body: input }),
+    deleteUser: (id: string) =>
+      $fetch<{ ok: true }>(`/api/admin/users/${encodeURIComponent(id)}`, { method: 'DELETE' }),
   }
 }

@@ -1,8 +1,6 @@
-// Validate credentials against runtimeConfig (env LOGIN/PASSWORD) and
-// issue an httpOnly session cookie. Same-origin form, SameSite=Lax — that
-// covers the basic CSRF case for this admin tool.
-
 import { SESSION_COOKIE, SESSION_TTL_SECONDS, signSession } from '../utils/session'
+import { verifyPassword } from '../utils/password'
+import { useAppStorage } from '../utils/storage'
 
 interface LoginBody {
   login?: string
@@ -36,19 +34,32 @@ export default defineEventHandler(async (event) => {
   const login = (body?.login ?? '').trim()
   const password = body?.password ?? ''
 
-  if (!login || !password || login !== cfg.login || password !== cfg.password) {
+  if (!login || !password) {
     setResponseStatus(event, 401)
     return { error: 'invalid credentials' }
   }
 
-  const token = signSession(login, SESSION_TTL_SECONDS, cfg.sessionSecret)
-  setCookie(event, SESSION_COOKIE, token, {
+  const cookieOptions = {
     httpOnly: true,
     sameSite: 'lax',
     secure: !import.meta.dev,
     path: '/',
     maxAge: SESSION_TTL_SECONDS,
-  })
+  } as const
 
-  return { ok: true, user: login }
+  if (login === cfg.login && password === cfg.password) {
+    const token = signSession({ kind: 'admin', login }, SESSION_TTL_SECONDS, cfg.sessionSecret)
+    setCookie(event, SESSION_COOKIE, token, cookieOptions)
+    return { ok: true, user: login, kind: 'admin' }
+  }
+
+  const user = await useAppStorage().getUserByLogin(login)
+  if (!user || !(await verifyPassword(password, user.passwordHash))) {
+    setResponseStatus(event, 401)
+    return { error: 'invalid credentials' }
+  }
+
+  const token = signSession({ kind: 'user', userId: user.id, login: user.login }, SESSION_TTL_SECONDS, cfg.sessionSecret)
+  setCookie(event, SESSION_COOKIE, token, cookieOptions)
+  return { ok: true, user: user.login, kind: 'user', userId: user.id }
 })

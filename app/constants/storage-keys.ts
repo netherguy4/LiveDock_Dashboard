@@ -12,5 +12,5 @@ export const STORAGE_KEYS = {
   CONTAINERS_SORT: `${PREFIX}containers.sort`,
   CONTAINERS_FILTER: `${PREFIX}containers.filter`,
   LOGS_AUTOSCROLL: `${PREFIX}logs.autoscroll`,
-  HOSTS_LOCAL: `${PREFIX}hosts.local`,
+  HOSTS_ACTIVE: `${PREFIX}hosts.active`,
 } as const
