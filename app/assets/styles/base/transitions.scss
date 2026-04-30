@@ -56,6 +56,22 @@
     animation-name: vt-enter;
   }
 
+  .theme-wave-transition::view-transition-old(root),
+  .theme-wave-transition::view-transition-new(root) {
+    animation-duration: 760ms;
+    animation-timing-function: cubic-bezier(0.12, 0.82, 0.18, 1);
+    animation-fill-mode: both;
+    mix-blend-mode: normal;
+  }
+
+  .theme-wave-transition::view-transition-old(root) {
+    animation-name: none;
+  }
+
+  .theme-wave-transition::view-transition-new(root) {
+    animation-name: theme-wave-reveal;
+  }
+
   @keyframes vt-exit {
     to {
       opacity: 0;
@@ -72,6 +88,16 @@
     to {
       opacity: 1;
       transform: scale(1);
+    }
+  }
+
+  @keyframes theme-wave-reveal {
+    from {
+      clip-path: circle(0 at var(--theme-wave-x, 100%) var(--theme-wave-y, 0));
+    }
+
+    to {
+      clip-path: circle(var(--theme-wave-radius, 150vmax) at var(--theme-wave-x, 100%) var(--theme-wave-y, 0));
     }
   }
 }
