@@ -27,6 +27,18 @@ describe('hosts store', () => {
 
     expect(store.items).toHaveLength(1)
     expect(store.activeId).toBe('h1')
+    expect(store.loaded).toBe(true)
+  })
+
+  it('marks an empty host list as loaded', async () => {
+    api.hosts.mockResolvedValue([])
+    const store = useHostsStore()
+
+    await store.load()
+
+    expect(store.items).toEqual([])
+    expect(store.activeId).toBe('')
+    expect(store.loaded).toBe(true)
   })
 
   it('selects the first host after load when active id is missing', async () => {

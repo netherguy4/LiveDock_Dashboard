@@ -58,6 +58,23 @@ function runTick() {
   if (tickN % POLLING.REQUESTS_EVERY === 0) void requests.refresh()
 }
 
+async function loadHostsForUser() {
+  if (hosts.loaded || hosts.loading) return
+  try {
+    await hosts.load()
+  } catch {
+    hosts.reset()
+  }
+}
+
+if (auth.isAuthed && auth.kind === 'user' && route.path !== '/login') {
+  await loadHostsForUser()
+}
+
+if (auth.isAuthed && auth.kind === 'admin') {
+  hosts.reset()
+}
+
 watch([() => ui.intervalMs, polling], start, { immediate: false })
 
 // Keep the containers store in sync with each snapshot globally — pages that
@@ -74,7 +91,7 @@ watch(
   () => [auth.kind, auth.isAuthed, route.path] as const,
   ([kind, authed, path]) => {
     if (!authed || path === '/login') return
-    if (kind === 'user') void hosts.load()
+    if (kind === 'user') void loadHostsForUser()
     if (kind === 'admin') hosts.reset()
   },
   { immediate: true },

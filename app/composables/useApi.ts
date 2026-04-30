@@ -128,6 +128,19 @@ function hostHeaders(): Record<string, string> {
   }
 }
 
+function requestHeaders(): Record<string, string> {
+  const globalUseRequestHeaders = (globalThis as typeof globalThis & {
+    useRequestHeaders?: (include?: string[]) => Record<string, string>
+  }).useRequestHeaders
+  if (globalUseRequestHeaders) return globalUseRequestHeaders(['cookie'])
+
+  try {
+    return useRequestHeaders(['cookie']) as Record<string, string>
+  } catch {
+    return {}
+  }
+}
+
 export const useApi = () => {
   const headers = () => hostHeaders()
   return {
@@ -158,14 +171,14 @@ export const useApi = () => {
         method: 'POST',
         body: { url, token },
       }),
-    hosts: () => $fetch<Host[]>('/api/hosts'),
+    hosts: () => $fetch<Host[]>('/api/hosts', { headers: requestHeaders() }),
     createHost: (input: HostInput) =>
       $fetch<Host>('/api/hosts', { method: 'POST', body: input }),
     updateHost: (id: string, input: HostInput) =>
       $fetch<Host>(`/api/hosts/${encodeURIComponent(id)}`, { method: 'PATCH', body: input }),
     deleteHost: (id: string) =>
       $fetch<{ ok: true }>(`/api/hosts/${encodeURIComponent(id)}`, { method: 'DELETE' }),
-    adminUsers: () => $fetch<ManagedUser[]>('/api/admin/users'),
+    adminUsers: () => $fetch<ManagedUser[]>('/api/admin/users', { headers: requestHeaders() }),
     createUser: (input: Required<UserInput>) =>
       $fetch<ManagedUser>('/api/admin/users', { method: 'POST', body: input }),
     updateUser: (id: string, input: UserInput) =>

@@ -13,14 +13,16 @@ import { useUiStore } from '~/stores/ui.store'
 const hosts = useHostsStore()
 const auth = useAuthStore()
 const ui = useUiStore()
+const knownEmptyHosts = computed(() => auth.kind === 'user' && hosts.loaded && hosts.isEmpty)
+const showBootSkeleton = computed(() => !ui.booted && !knownEmptyHosts.value && auth.kind !== 'admin')
 
 definePageMeta({ layout: 'default' })
 useHead({ title: 'LiveDock · Dashboard' })
 </script>
 
 <template>
-  <div class="dashboard" :aria-busy="!ui.booted ? true : undefined">
-    <template v-if="!ui.booted">
+  <div class="dashboard" :aria-busy="showBootSkeleton ? true : undefined">
+    <template v-if="showBootSkeleton">
       <div class="dashboard__skeleton" aria-hidden="true">
         <div class="dashboard__sk-top">
           <div class="dashboard__sk-system-info">
@@ -130,7 +132,7 @@ useHead({ title: 'LiveDock · Dashboard' })
         </NuxtLink>
       </div>
     </template>
-    <template v-else-if="hosts.isEmpty && !hosts.loading">
+    <template v-else-if="knownEmptyHosts">
       <div class="dashboard__empty">
         <div class="dashboard__empty-icon">
           <Server :size="48" />

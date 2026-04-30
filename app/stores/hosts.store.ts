@@ -11,6 +11,7 @@ export const useHostsStore = defineStore('hosts', {
     items: [] as LocalHost[],
     activeId: '' as string,
     loading: false,
+    loaded: false,
     saving: false,
     error: null as string | null,
     addDialogOpen: false,
@@ -30,6 +31,7 @@ export const useHostsStore = defineStore('hosts', {
       this.items = []
       this.activeId = ''
       this.loading = false
+      this.loaded = false
       this.saving = false
       this.error = null
     },
@@ -45,6 +47,7 @@ export const useHostsStore = defineStore('hosts', {
         this.error = e instanceof Error ? e.message : String(e)
         throw e
       } finally {
+        this.loaded = true
         this.loading = false
       }
     },

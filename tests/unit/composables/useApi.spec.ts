@@ -14,6 +14,7 @@ describe('useApi', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockFetch.mockReset()
+    vi.stubGlobal('useRequestHeaders', vi.fn(() => ({ cookie: 'monitoring_auth=session' })))
   })
 
   const setupHost = (host: Partial<LocalHost> | null) => {
@@ -117,7 +118,9 @@ describe('useApi', () => {
     await api.updateHost('h1', { name: 'prod-2', url: 'https://prod2.example' })
     await api.deleteHost('h1')
 
-    expect(mockFetch).toHaveBeenCalledWith('/api/hosts')
+    expect(mockFetch).toHaveBeenCalledWith('/api/hosts', {
+      headers: { cookie: 'monitoring_auth=session' },
+    })
     expect(mockFetch).toHaveBeenCalledWith('/api/hosts', {
       method: 'POST',
       body: { name: 'prod', url: 'https://prod.example', token: 'tok' },
@@ -137,7 +140,9 @@ describe('useApi', () => {
     await api.updateUser('u1', { password: 'new-secret' })
     await api.deleteUser('u1')
 
-    expect(mockFetch).toHaveBeenCalledWith('/api/admin/users')
+    expect(mockFetch).toHaveBeenCalledWith('/api/admin/users', {
+      headers: { cookie: 'monitoring_auth=session' },
+    })
     expect(mockFetch).toHaveBeenCalledWith('/api/admin/users', {
       method: 'POST',
       body: { login: 'alice', password: 'secret' },

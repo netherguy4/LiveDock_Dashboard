@@ -55,7 +55,7 @@ function isUniqueLoginError(e: unknown): boolean {
 }
 
 export function createPostgresStorage(connectionString: string): AppStorage {
-  const sql = postgres(connectionString, { max: 1 })
+  const sql = postgres(connectionString, { max: 1, prepare: false })
   let schemaPromise: Promise<void> | null = null
 
   function ensureSchema() {
