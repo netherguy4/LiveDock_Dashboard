@@ -8,9 +8,10 @@ const auth = useAuthStore()
 const hosts = useHostsStore()
 
 const NAV = computed(() => {
+  if (auth.kind === 'admin') return [{ label: 'Users', to: ROUTES.USERS }]
+
   const items = [{ label: 'Dashboard', to: ROUTES.HOME }]
   if (!hosts.isEmpty) items.push({ label: 'Containers', to: ROUTES.CONTAINERS })
-  if (auth.kind === 'admin') items.push({ label: 'Users', to: ROUTES.USERS })
   return items
 })
 
