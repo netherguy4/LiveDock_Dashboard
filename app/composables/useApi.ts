@@ -99,8 +99,7 @@ export type Host = {
 }
 
 // hostHeaders attaches the active host's URL/token to a proxied request so the
-// Nuxt server can route to the right backend. Empty for the default host —
-// the server falls back to BACKEND_URL/API_TOKEN.
+// Nuxt server can route to the right backend. Empty if no active host is set.
 function hostHeaders(): Record<string, string> {
   // Avoid pulling in the store on the server during SSR — the proxy runs on
   // the server too, so headers are only meaningful for browser-originated calls.

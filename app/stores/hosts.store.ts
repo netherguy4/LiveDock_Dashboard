@@ -1,8 +1,7 @@
 // Multi-host support. Hosts are managed client-side (persisted in cookies
 // via pinia-plugin-persistedstate). Add/remove update both localExtras and
 // items; afterHydrate merges them on page load.
-// The /api/hosts endpoint is deprecated — the default host is configured
-// through environment variables on the proxy layer.
+// All hosts are user-managed — there is no built-in default host.
 
 import { defineStore } from 'pinia'
 import type { Host } from '~/composables/useApi'

@@ -1,7 +1,4 @@
 <script setup lang="ts">
-// Host switcher dropdown. Source of truth is useHostsStore — hosts are
-// added/removed client-side and persisted in cookies.
-
 import { onClickOutside } from '@vueuse/core'
 import {
   Server, Plus, Check, Trash2, X, Globe, KeyRound, Edit3, ChevronDown,
@@ -12,8 +9,52 @@ import { useHostsStore } from '~/stores/hosts.store'
 const hosts = useHostsStore()
 const open = ref(false)
 const root = ref<HTMLElement | null>(null)
+const modalCard = ref<HTMLElement | null>(null)
+const nameInput = ref<HTMLInputElement | null>(null)
+let previousFocus: HTMLElement | null = null
 
 onClickOutside(root, () => { open.value = false })
+
+function onKey(e: KeyboardEvent) {
+  if (e.key !== 'Escape') return
+  if (hosts.addDialogOpen) {
+    hosts.setAddDialogOpen(false)
+    return
+  }
+  if (open.value) {
+    open.value = false
+  }
+}
+
+const FOCUSABLE = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+
+function _trapFocus(e: KeyboardEvent) {
+  if (e.key !== 'Tab') return
+  const card = modalCard.value
+  if (!card) return
+  const focusable = card.querySelectorAll<HTMLElement>(FOCUSABLE)
+  if (focusable.length === 0) return
+  const first = focusable[0]
+  const last = focusable[focusable.length - 1]
+  if (e.shiftKey) {
+    if (document.activeElement === first) {
+      e.preventDefault()
+      last.focus()
+    }
+  } else {
+    if (document.activeElement === last) {
+      e.preventDefault()
+      first.focus()
+    }
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', onKey)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onKey)
+})
 
 const statusMap = {
   online:   { color: 'success', icon: Wifi,        label: 'online' },
@@ -84,7 +125,14 @@ async function submitHost() {
 watch(() => hosts.addDialogOpen, (v) => {
   if (typeof document === 'undefined') return
   document.body.style.overflow = v ? 'hidden' : ''
-  if (!v) resetDraft()
+  if (v) {
+    previousFocus = document.activeElement as HTMLElement
+    nextTick(() => nameInput.value?.focus())
+  } else {
+    resetDraft()
+    previousFocus?.focus()
+    previousFocus = null
+  }
 })
 </script>
 
@@ -178,7 +226,15 @@ watch(() => hosts.addDialogOpen, (v) => {
           class="host-modal"
           @click.self="hosts.setAddDialogOpen(false)"
         >
-          <div class="host-modal__card" @click.stop>
+          <div
+            ref="modalCard"
+            class="host-modal__card"
+            role="dialog"
+            aria-modal="true"
+            :aria-label="isEditing ? 'Edit API host' : 'Add API host'"
+            @click.stop
+            @keydown="_trapFocus"
+          >
             <div class="host-modal__head">
               <span class="host-modal__title">
                 <component :is="isEditing ? Edit3 : Plus" :size="16" />
@@ -195,8 +251,8 @@ watch(() => hosts.addDialogOpen, (v) => {
                 <span class="host-modal__wrap">
                   <Edit3 :size="16" class="host-modal__icon" />
                   <input
+                    ref="nameInput"
                     v-model="draft.name"
-                    autofocus
                     autocomplete="off"
                     placeholder="Production EU"
                     class="host-modal__input"

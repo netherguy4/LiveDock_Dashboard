@@ -19,8 +19,6 @@ export default defineNuxtConfig({
   css: ["~/assets/styles/base/base.scss"],
 
   runtimeConfig: {
-    apiUrl: process.env.BACKEND_URL || "",
-    apiToken: process.env.API_TOKEN || "",
     login: process.env.LOGIN || "admin",
     password: process.env.PASSWORD || "",
     sessionSecret: process.env.SESSION_SECRET || "",

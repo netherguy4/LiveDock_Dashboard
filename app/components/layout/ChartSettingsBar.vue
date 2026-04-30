@@ -1,8 +1,4 @@
 <script setup lang="ts">
-// Toolbar above the dashboard — refresh selector, pause toggle, live ticker,
-// and "show all CPU cores / disks" switches. All state lives in useUiStore
-// (persisted), so options survive reloads.
-
 import { onClickOutside } from '@vueuse/core'
 import { Pause, Play, Clock, ChevronDown } from 'lucide-vue-next'
 import { POLLING } from '~/configs/polling.config'
@@ -25,6 +21,13 @@ const currentLabel = computed(() =>
 const refreshOpen = ref(false)
 const refreshRoot = ref<HTMLElement | null>(null)
 onClickOutside(refreshRoot, () => { refreshOpen.value = false })
+
+function onKey(e: KeyboardEvent) {
+  if (e.key === 'Escape' && refreshOpen.value) refreshOpen.value = false
+}
+
+onMounted(() => window.addEventListener('keydown', onKey))
+onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 
 function pick(ms: number) {
   ui.setInterval(ms)

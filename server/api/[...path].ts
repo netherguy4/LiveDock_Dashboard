@@ -1,17 +1,14 @@
-// Catch-all proxy from `/api/*` (browser) → `${BACKEND_URL}/api/*` (Go).
+// Catch-all proxy from `/api/*` (browser) → upstream Go backend.
 // Auth is enforced by server/middleware/auth.ts before we get here, so we
 // only need to attach the Bearer token to the upstream request.
 //
-// Multi-host: if the browser sets X-Mon-Url, we forward to that backend
-// instead of the default one. X-Mon-Token (optional) overrides the bearer.
-// The default host has no headers and uses runtimeConfig (server-side only),
-// so its token never reaches the browser.
+// Multi-host: the browser sets X-Mon-Url and optionally X-Mon-Token.
+// Both headers are required for the proxy to forward.
 //
 // Specific routes like /api/login, /api/logout, /api/me have their own files
 // and take precedence over this catch-all.
 
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig()
   const path = getRouterParam(event, 'path') || ''
   const query = getQuery(event)
   const method = event.method
@@ -19,8 +16,13 @@ export default defineEventHandler(async (event) => {
   const monUrl = getRequestHeader(event, 'x-mon-url') || ''
   const monToken = getRequestHeader(event, 'x-mon-token') || ''
 
-  const baseUrl = monUrl || config.apiUrl
-  const token = monToken || config.apiToken
+  if (!monUrl) {
+    setResponseStatus(event, 400)
+    return { error: 'missing x-mon-url header' }
+  }
+
+  const baseUrl = monUrl
+  const token = monToken
 
   let url: URL
   try {
