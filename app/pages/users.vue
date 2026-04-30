@@ -11,8 +11,10 @@ const auth = useAuthStore()
 const users = useUsersStore()
 const dialogOpen = ref(false)
 const deleteId = ref('')
+const loaded = ref(false)
 const draft = reactive({ id: '', login: '', password: '' })
 const isEditing = computed(() => Boolean(draft.id))
+const showSkeleton = computed(() => users.loading || (auth.kind === 'admin' && !loaded.value))
 
 function resetDraft() {
   draft.id = ''
@@ -51,7 +53,10 @@ async function removeUser(id: string) {
 }
 
 onMounted(() => {
-  if (auth.kind === 'admin') void users.load()
+  if (auth.kind !== 'admin') return
+  void users.load().finally(() => {
+    loaded.value = true
+  })
 })
 </script>
 
@@ -76,7 +81,25 @@ onMounted(() => {
         <span />
       </div>
 
-      <div v-if="users.loading" class="users-page__empty">Loading users...</div>
+      <template v-if="showSkeleton">
+        <div
+          v-for="i in 5"
+          :key="i"
+          class="users-page__row users-page__row--skeleton"
+          aria-hidden="true"
+        >
+          <span class="users-page__sk-user">
+            <span class="users-page__sk-avatar" />
+            <span class="users-page__sk-line users-page__sk-line--login" />
+          </span>
+          <span class="users-page__sk-line users-page__sk-line--date" />
+          <span class="users-page__sk-line users-page__sk-line--date" />
+          <span class="users-page__sk-actions">
+            <span class="users-page__sk-button" />
+            <span class="users-page__sk-button" />
+          </span>
+        </div>
+      </template>
       <div v-else-if="users.items.length === 0" class="users-page__empty">No users yet</div>
 
       <div
@@ -239,6 +262,10 @@ onMounted(() => {
       letter-spacing: 0.06em;
     }
 
+    &--skeleton {
+      pointer-events: none;
+    }
+
     @include until($bp-md) {
       grid-template-columns: 1fr;
       align-items: flex-start;
@@ -258,6 +285,50 @@ onMounted(() => {
   &__login {
     color: var(--color-foreground);
     font-weight: 700;
+  }
+
+  &__sk-user,
+  &__sk-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  &__sk-actions {
+    justify-content: flex-end;
+  }
+
+  &__sk-avatar,
+  &__sk-button,
+  &__sk-line {
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  &__sk-avatar {
+    @include skeleton(28px, 28px);
+
+    border-radius: var(--radius-md);
+  }
+
+  &__sk-button {
+    @include skeleton(32px, 32px);
+
+    border-radius: var(--radius-md);
+  }
+
+  &__sk-line {
+    @include skeleton(12px, 100%);
+
+    border-radius: var(--radius-sm);
+
+    &--login {
+      width: min(128px, 42vw);
+    }
+
+    &--date {
+      width: min(168px, 48vw);
+    }
   }
 
   &__actions {
