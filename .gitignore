@@ -36,6 +36,7 @@ desktop.ini
 .vscode/
 .claude/
 docs/
+test-results/
 *.swp
 *.swo
 

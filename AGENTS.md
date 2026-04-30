@@ -27,12 +27,13 @@
 
 ## Правила для ИИ-ассистента
 
-1. **Запрещено:** коммитить код, вести логи своей работы.
+1. **Запрещено:** выполнять `git commit`. Вообще. Даже через плагины/скиллы. Коммит в `master` или `main` — табу.
 2. **Стиль**: Setup, Pinia, BEM, `useApi()`. Без комментариев (без явного запроса).
-3. **Ограничения**: Тестов нет. Не трогай `.claude/`.
-4. **Проверка**: После правок запускай `yarn lint`.
+3. **Ограничения**: Не трогай `.claude/`.
+4. **Проверка**: После правок запускай `yarn lint` (ESLint) и `yarn lint:style` (Stylelint).
 
 ## Testing and Quality
+
 - **Unit/Component:** `yarn test:unit`
 - **E2E:** `yarn test:e2e`
 - **Linting:** `yarn lint` (ESLint), `yarn lint:style` (Stylelint)
