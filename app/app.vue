@@ -120,7 +120,12 @@ onUnmounted(stop)
 <template>
   <div class="app">
     <NuxtLayout>
-      <NuxtPage />
+      <NuxtPage
+        :transition="{
+          name: 'page',
+          mode: 'out-in',
+        }"
+      />
     </NuxtLayout>
     <ClientOnly>
       <Toaster position="bottom-right" rich-colors />

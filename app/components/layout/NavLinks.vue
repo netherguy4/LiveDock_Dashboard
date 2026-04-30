@@ -50,7 +50,8 @@ function isActive(to: string) {
     font-size: 13px;
     font-weight: 600;
     color: var(--slate-700);
-    transition: background-color $transition-fast, color $transition-fast;
+    contain: layout;
+    transition: background-color 180ms $ease-out, color 180ms $ease-out, box-shadow 220ms $ease-out;
 
     &:hover {
       background: var(--slate-100);
@@ -66,6 +67,7 @@ function isActive(to: string) {
       color: oklch(0.99 0.005 180) !important;
       background: var(--gradient-brand) !important;
       box-shadow: 0 6px 18px -8px rgba(20, 184, 166, 0.5);
+      view-transition-name: active-nav-link;
     }
   }
 }
