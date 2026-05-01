@@ -9,5 +9,6 @@ export default defineEventHandler((event) => {
     user: session?.login ?? '',
     kind: session?.kind ?? null,
     userId: session?.kind === 'user' ? session.userId : null,
+    demo: session?.kind === 'user' ? Boolean(session.demo) : false,
   }
 })
