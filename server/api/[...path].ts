@@ -1,11 +1,23 @@
 import { requireUser } from '../utils/auth-subject'
 import { useAppStorage } from '../utils/storage'
+import { generateDemoData } from '../utils/demo'
 
 export default defineEventHandler(async (event) => {
   const path = getRouterParam(event, 'path') || ''
   const query = getQuery(event)
   const method = event.method
   const session = requireUser(event)
+
+  // Demo user — serve mock data instead of proxying to Go
+  if (session.demo) {
+    try {
+      return generateDemoData(path, query)
+    } catch (err: unknown) {
+      const e = err as { message?: string }
+      setResponseStatus(event, 500)
+      return { error: e?.message || 'demo data generation error' }
+    }
+  }
 
   const hostId = getRequestHeader(event, 'x-mon-host-id') || ''
   if (!hostId) {
@@ -38,7 +50,6 @@ export default defineEventHandler(async (event) => {
     body = await readBody(event).catch(() => undefined)
   }
 
-  // Defense-in-depth: state-changing requests must come from same origin.
   if (method !== 'GET' && method !== 'HEAD') {
     const origin = getRequestHeader(event, 'origin')
     const host = getRequestHeader(event, 'host')
