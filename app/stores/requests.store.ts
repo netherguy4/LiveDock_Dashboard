@@ -22,6 +22,11 @@ export const useRequestsStore = defineStore('requests', {
   },
 
   actions: {
+    clear() {
+      this.points = []
+      this.loading = false
+      this.error = null
+    },
     async refresh(hours = 12) {
       this.loading = true
       try {

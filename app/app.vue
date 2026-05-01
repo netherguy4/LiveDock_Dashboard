@@ -48,6 +48,7 @@ function runTick() {
   if (hosts.isEmpty) return
   tickN++
   void metrics.refreshSnapshot()
+  void hosts.refreshStatuses()
   if (logs.activeId) {
     void logs.refreshActive()
   } else {
@@ -59,6 +60,14 @@ function runTick() {
 }
 
 let loadedForUserId: string | null = null
+let prevActiveHostId = ''
+
+function clearHostScopedData() {
+  metrics.clear()
+  requests.clear()
+  containers.clear()
+  logs.reset()
+}
 
 async function loadHostsForUser() {
   if (hosts.loading) return
@@ -66,6 +75,7 @@ async function loadHostsForUser() {
   try {
     await hosts.load()
     loadedForUserId = auth.userId
+    void hosts.refreshStatuses()
   } catch {
     hosts.reset()
     loadedForUserId = null
@@ -105,10 +115,15 @@ watch(
 
 watch(
   () => [hosts.isEmpty, route.path, hosts.activeId, auth.kind] as const,
-  ([empty, path, _activeId, kind]) => {
+  ([empty, path, activeId, kind]) => {
     tickN = 0
     if (empty || path === '/login' || kind !== 'user') return
+    if (prevActiveHostId && activeId && prevActiveHostId !== activeId) {
+      clearHostScopedData()
+    }
+    prevActiveHostId = activeId
     void metrics.refreshSnapshot()
+    void hosts.refreshStatuses()
     void metrics.refreshHistory()
     void requests.refresh()
   },

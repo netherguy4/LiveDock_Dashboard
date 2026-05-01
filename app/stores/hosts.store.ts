@@ -3,7 +3,7 @@ import type { Host, HostInput } from '~/composables/useApi'
 import { STORAGE_KEYS } from '~/constants/storage-keys'
 
 export type LocalHost = Host & {
-  status?: 'online' | 'offline' | 'degraded'
+  status?: 'online' | 'offline' | 'degraded' | 'checking'
 }
 
 export const useHostsStore = defineStore('hosts', {
@@ -13,6 +13,7 @@ export const useHostsStore = defineStore('hosts', {
     loading: false,
     loaded: false,
     saving: false,
+    statusRefreshing: false,
     error: null as string | null,
     addDialogOpen: false,
   }),
@@ -27,12 +28,25 @@ export const useHostsStore = defineStore('hosts', {
     select(id: string) {
       this.activeId = id
     },
+    setStatus(id: string, status: LocalHost['status']) {
+      const index = this.items.findIndex((h) => h.id === id)
+      if (index === -1) return
+      this.items[index] = {
+        ...this.items[index],
+        status,
+      }
+    },
+    setActiveStatus(status: LocalHost['status']) {
+      if (!this.activeId) return
+      this.setStatus(this.activeId, status)
+    },
     reset() {
       this.items = []
       this.activeId = ''
       this.loading = false
       this.loaded = false
       this.saving = false
+      this.statusRefreshing = false
       this.error = null
     },
     async load() {
@@ -104,6 +118,24 @@ export const useHostsStore = defineStore('hosts', {
         throw e
       } finally {
         this.saving = false
+      }
+    },
+    async refreshStatuses() {
+      if (this.statusRefreshing || this.isEmpty) return
+      this.statusRefreshing = true
+      const ids = this.items.map((host) => host.id)
+      const api = useApi()
+      try {
+        await Promise.allSettled(ids.map(async (id) => {
+          try {
+            await api.snapshotForHost(id)
+            this.setStatus(id, 'online')
+          } catch {
+            this.setStatus(id, 'offline')
+          }
+        }))
+      } finally {
+        this.statusRefreshing = false
       }
     },
   },

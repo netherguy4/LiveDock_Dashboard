@@ -33,6 +33,16 @@ describe('useApi', () => {
     })
   })
 
+  it('calls snapshotForHost with explicit host header', async () => {
+    setupHost({ id: 'h1' })
+    const api = useApi()
+    await api.snapshotForHost('h2')
+
+    expect(mockFetch).toHaveBeenCalledWith('/api/snapshot', {
+      headers: { 'X-Mon-Host-Id': 'h2' },
+    })
+  })
+
   it('calls history with correct query and headers', async () => {
     setupHost({ id: 'h1' })
     const api = useApi()

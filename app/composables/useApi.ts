@@ -150,6 +150,8 @@ export const useApi = () => {
   const headers = () => hostHeaders()
   return {
     snapshot: () => $fetch<Snapshot>('/api/snapshot', { headers: headers() }),
+    snapshotForHost: (hostId: string) =>
+      $fetch<Snapshot>('/api/snapshot', { headers: { 'X-Mon-Host-Id': hostId } }),
     history: (minutes = 15) =>
       $fetch<HistoryPoint[]>('/api/history', { query: { minutes }, headers: headers() }),
     containers: () => $fetch<ContainerRow[]>('/api/containers', { headers: headers() }),

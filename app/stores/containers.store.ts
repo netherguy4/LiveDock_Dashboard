@@ -67,6 +67,12 @@ export const useContainersStore = defineStore('containers', {
   },
 
   actions: {
+    clear() {
+      this.items = []
+      this.loading = false
+      this.error = null
+      this.pending = {}
+    },
     syncFromSnapshot(items: ContainerRow[]) {
       this.items = items
     },

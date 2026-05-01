@@ -23,6 +23,11 @@ export const useLogsStore = defineStore('logs', {
   },
 
   actions: {
+    reset() {
+      this.byContainer = {}
+      this.activeId = null
+      this.error = null
+    },
     select(id: string | null) {
       this.activeId = id
     },

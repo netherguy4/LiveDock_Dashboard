@@ -4,6 +4,7 @@ import { useHostsStore } from '../../../app/stores/hosts.store'
 
 const api = {
   hosts: vi.fn(),
+  snapshotForHost: vi.fn(),
   createHost: vi.fn(),
   updateHost: vi.fn(),
   deleteHost: vi.fn(),
@@ -84,5 +85,83 @@ describe('hosts store', () => {
 
     expect(api.deleteHost).toHaveBeenCalledWith('h1')
     expect(store.activeId).toBe('h2')
+  })
+
+  it('sets status for active host only', () => {
+    const store = useHostsStore()
+    store.items = [
+      { id: 'h1', name: 'prod', url: 'https://prod.example', current: false },
+      { id: 'h2', name: 'stage', url: 'https://stage.example', current: false },
+    ]
+    store.activeId = 'h2'
+
+    store.setActiveStatus('offline')
+
+    expect(store.items[0].status).toBeUndefined()
+    expect(store.items[1].status).toBe('offline')
+  })
+
+  it('sets status by host id', () => {
+    const store = useHostsStore()
+    store.items = [
+      { id: 'h1', name: 'prod', url: 'https://prod.example', current: false },
+      { id: 'h2', name: 'stage', url: 'https://stage.example', current: false },
+    ]
+
+    store.setStatus('h1', 'online')
+
+    expect(store.items[0].status).toBe('online')
+    expect(store.items[1].status).toBeUndefined()
+  })
+
+  it('refreshes statuses for all hosts', async () => {
+    api.snapshotForHost.mockImplementation(async (id: string) => {
+      if (id === 'h2') throw new Error('unreachable')
+      return {
+        ts: '2026-05-01T00:00:00.000Z',
+      }
+    })
+
+    const store = useHostsStore()
+    store.items = [
+      { id: 'h1', name: 'prod', url: 'https://prod.example', current: false },
+      { id: 'h2', name: 'stage', url: 'https://stage.example', current: false },
+    ]
+
+    await store.refreshStatuses()
+
+    expect(api.snapshotForHost).toHaveBeenCalledTimes(2)
+    expect(store.items[0].status).toBe('online')
+    expect(store.items[1].status).toBe('offline')
+    expect(store.statusRefreshing).toBe(false)
+  })
+
+  it('does not switch hosts to checking during background refresh', async () => {
+    let resolveFirst: (() => void) | null = null
+    api.snapshotForHost.mockImplementation((id: string) => new Promise((resolve, reject) => {
+      if (id === 'h2') {
+        reject(new Error('unreachable'))
+        return
+      }
+      resolveFirst = () => resolve({ ts: '2026-05-01T00:00:00.000Z' })
+    }))
+
+    const store = useHostsStore()
+    store.items = [
+      { id: 'h1', name: 'prod', url: 'https://prod.example', current: false, status: 'online' },
+      { id: 'h2', name: 'stage', url: 'https://stage.example', current: false, status: 'offline' },
+    ]
+
+    const pending = store.refreshStatuses()
+    await Promise.resolve()
+
+    expect(store.items[0].status).toBe('online')
+    expect(store.items[1].status).toBe('offline')
+
+    resolveFirst?.()
+    await pending
+
+    expect(store.items[0].status).toBe('online')
+    expect(store.items[1].status).toBe('offline')
   })
 })

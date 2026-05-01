@@ -2,7 +2,7 @@
 import { onClickOutside } from '@vueuse/core'
 import {
   Server, Plus, Check, Trash2, X, Globe, KeyRound, Edit3, ChevronDown,
-  Wifi, WifiOff, AlertCircle,
+  Wifi, WifiOff, AlertCircle, LoaderCircle,
 } from 'lucide-vue-next'
 import { useHostsStore } from '~/stores/hosts.store'
 import type { LocalHost } from '~/stores/hosts.store'
@@ -60,7 +60,8 @@ onBeforeUnmount(() => {
 const statusMap = {
   online:   { color: 'success', icon: Wifi,        label: 'online' },
   degraded: { color: 'warn',    icon: AlertCircle, label: 'degraded' },
-  offline:  { color: 'neutral', icon: WifiOff,     label: 'offline' },
+  offline:  { color: 'danger',  icon: WifiOff,     label: 'offline' },
+  checking: { color: 'neutral', icon: LoaderCircle, label: 'checking' },
 } as const
 
 function pick(id: string) {
@@ -159,7 +160,21 @@ watch(() => hosts.addDialogOpen, (v) => {
       <Server :size="16" class="host-switcher__brand-icon" />
       <span class="host-switcher__meta">
         <span class="host-switcher__cap">HOST</span>
-        <span class="host-switcher__name">{{ hosts.active?.name ?? '—' }}</span>
+        <span class="host-switcher__name-row">
+          <span class="host-switcher__name">{{ hosts.active?.name ?? '—' }}</span>
+                <span
+                  v-if="hosts.active?.status"
+                  class="host-switcher__pill"
+                  :class="`host-switcher__pill--${statusMap[hosts.active.status].color}`"
+                >
+                  <component
+                    :is="statusMap[hosts.active.status].icon"
+                    :size="11"
+                    :class="{ 'host-switcher__spin': hosts.active.status === 'checking' }"
+                  />
+                  {{ statusMap[hosts.active.status].label }}
+                </span>
+        </span>
       </span>
       <ChevronDown :size="16" class="host-switcher__caret" />
     </button>
@@ -191,7 +206,11 @@ watch(() => hosts.addDialogOpen, (v) => {
                   class="host-switcher__pill"
                   :class="`host-switcher__pill--${statusMap[h.status].color}`"
                 >
-                  <component :is="statusMap[h.status].icon" :size="12" />
+                  <component
+                    :is="statusMap[h.status].icon"
+                    :size="12"
+                    :class="{ 'host-switcher__spin': h.status === 'checking' }"
+                  />
                   {{ statusMap[h.status].label }}
                 </span>
               </div>
@@ -357,6 +376,12 @@ watch(() => hosts.addDialogOpen, (v) => {
     color: var(--color-subtle-foreground);
   }
   &__name { font-size: 13px; }
+  &__name-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
   &__caret { color: var(--color-subtle-foreground); }
 
   &__panel {
@@ -469,9 +494,15 @@ watch(() => hosts.addDialogOpen, (v) => {
 
     &--success { background: rgb(16 185 129 / 0.12); color: var(--emerald-500); border-color: rgb(16 185 129 / 0.30); }
     &--warn    { background: rgb(245 158 11 / 0.12); color: var(--amber-500);  border-color: rgb(245 158 11 / 0.30); }
+    &--danger  { background: rgb(239 68 68 / 0.12); color: var(--red-400); border-color: rgb(239 68 68 / 0.30); }
     &--neutral { background: rgb(100 116 139 / 0.15); color: var(--slate-400); border-color: rgb(100 116 139 / 0.30); }
     .theme--dark &--success { color: var(--emerald-300); }
     .theme--dark &--warn    { color: var(--amber-300); }
+    .theme--dark &--danger  { color: var(--red-300); }
+  }
+
+  &__spin {
+    animation: host-switcher-spin 1.2s linear infinite;
   }
 
   &__remove {
@@ -686,6 +717,10 @@ watch(() => hosts.addDialogOpen, (v) => {
 }
 
 @keyframes host-modal-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes host-switcher-spin {
   to { transform: rotate(360deg); }
 }
 </style>

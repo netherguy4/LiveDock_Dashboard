@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Plus, Server, Users } from 'lucide-vue-next'
+import { Plus, Server, Users, WifiOff } from 'lucide-vue-next'
 import ChartSettingsBar from '~/components/layout/ChartSettingsBar.vue'
 import ContainersPanel from '~/components/blocks/ContainersPanel.vue'
 import HealthOverview from '~/components/blocks/HealthOverview.vue'
@@ -9,12 +9,27 @@ import SystemInfo from '~/components/blocks/SystemInfo.vue'
 import { useHostsStore } from '~/stores/hosts.store'
 import { useAuthStore } from '~/stores/auth.store'
 import { useUiStore } from '~/stores/ui.store'
+import { useMetricsStore } from '~/stores/metrics.store'
+import { useRequestsStore } from '~/stores/requests.store'
 
 const hosts = useHostsStore()
 const auth = useAuthStore()
 const ui = useUiStore()
+const metrics = useMetricsStore()
+const requests = useRequestsStore()
 const knownEmptyHosts = computed(() => auth.kind === 'user' && hosts.loaded && hosts.isEmpty)
+const activeHostOffline = computed(
+  () => auth.kind === 'user' && hosts.active?.status === 'offline',
+)
 const showBootSkeleton = computed(() => !ui.booted && !knownEmptyHosts.value && auth.kind !== 'admin')
+
+async function retryActiveHost() {
+  await Promise.allSettled([
+    metrics.refreshSnapshot(),
+    metrics.refreshHistory(),
+    requests.refresh(),
+  ])
+}
 
 definePageMeta({ layout: 'default' })
 useHead({ title: 'LiveDock · Dashboard' })
@@ -147,6 +162,24 @@ useHead({ title: 'LiveDock · Dashboard' })
         >
           <Plus :size="18" />
           Добавить сервер
+        </button>
+      </div>
+    </template>
+    <template v-else-if="activeHostOffline">
+      <div class="dashboard__offline" role="status" aria-live="polite">
+        <div class="dashboard__offline-icon">
+          <WifiOff :size="28" />
+        </div>
+        <div class="dashboard__offline-main">
+          <h2 class="dashboard__offline-title">Host is unreachable</h2>
+          <p class="dashboard__offline-desc">
+            Не удалось получить метрики с хоста {{ hosts.active?.name ?? '—' }}.
+            Проверьте доступность API и токен подключения.
+          </p>
+          <p class="dashboard__offline-meta">{{ hosts.active?.url ?? '—' }}</p>
+        </div>
+        <button class="dashboard__offline-action" type="button" @click="retryActiveHost">
+          Повторить подключение
         </button>
       </div>
     </template>
@@ -515,6 +548,67 @@ useHead({ title: 'LiveDock · Dashboard' })
     text-decoration: none;
 
     &:hover { opacity: 0.92; }
+    &:focus-visible {
+      outline: 2px solid var(--color-ring);
+      outline-offset: 3px;
+    }
+  }
+
+  &__offline {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+  }
+  &__offline-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-lg);
+    background: rgb(239 68 68 / 0.12);
+    color: var(--red-400);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  &__offline-main {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+  &__offline-title {
+    margin: 0;
+    font-size: var(--fs-h3);
+    font-weight: var(--fw-bold);
+    color: var(--color-foreground);
+  }
+  &__offline-desc {
+    margin: var(--space-1) 0 0;
+    color: var(--color-subtle-foreground);
+    font-size: var(--fs-label);
+  }
+  &__offline-meta {
+    margin: var(--space-2) 0 0;
+    color: var(--color-muted-foreground);
+    font-family: $font-stack-mono;
+    font-size: var(--fs-small);
+    @include truncate;
+  }
+  &__offline-action {
+    height: 36px;
+    padding: 0 var(--space-4);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-input-border);
+    background: transparent;
+    color: var(--color-foreground);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-semibold);
+    cursor: pointer;
+    transition: background-color $transition-fast;
+
+    &:hover { background: var(--color-accent); }
     &:focus-visible {
       outline: 2px solid var(--color-ring);
       outline-offset: 3px;

@@ -3,6 +3,7 @@
 
 import { defineStore } from 'pinia'
 import type { HistoryPoint, Snapshot } from '~/composables/useApi'
+import { useHostsStore } from '~/stores/hosts.store'
 
 export const useMetricsStore = defineStore('metrics', {
   state: () => ({
@@ -24,14 +25,25 @@ export const useMetricsStore = defineStore('metrics', {
   },
 
   actions: {
+    clear() {
+      this.snapshot = null
+      this.history = []
+      this.loading = false
+      this.historyReady = false
+      this.error = null
+      this.lastUpdated = 0
+    },
     async refreshSnapshot() {
+      const hosts = useHostsStore()
       this.loading = true
       try {
         this.snapshot = await useApi().snapshot()
         this.lastUpdated = Date.now()
         this.error = null
+        hosts.setActiveStatus('online')
       } catch (e: unknown) {
         this.error = e instanceof Error ? e.message : String(e)
+        hosts.setActiveStatus('offline')
       } finally {
         this.loading = false
       }
