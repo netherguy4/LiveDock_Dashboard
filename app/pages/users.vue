@@ -11,6 +11,20 @@ const auth = useAuthStore()
 const users = useUsersStore()
 const dialogOpen = ref(false)
 const deleteId = ref('')
+const demoLoading = ref(false)
+
+async function toggleDemo(enabled: boolean) {
+  demoLoading.value = true
+  try {
+    await $fetch('/api/admin/demo/toggle', {
+      method: 'PATCH',
+      body: { enabled },
+    })
+    await users.load()
+  } finally {
+    demoLoading.value = false
+  }
+}
 const loaded = ref(false)
 const draft = reactive({ id: '', login: '', password: '' })
 const isEditing = computed(() => Boolean(draft.id))
@@ -115,26 +129,43 @@ onMounted(() => {
         <span class="users-page__meta" data-label="Created">{{ new Date(user.createdAt).toLocaleString() }}</span>
         <span class="users-page__meta" data-label="Updated">{{ new Date(user.updatedAt).toLocaleString() }}</span>
         <span class="users-page__actions">
-          <button type="button" class="users-page__icon" title="Edit user" @click="openEdit(user)">
-            <Edit3 :size="15" />
-          </button>
-          <button
-            v-if="deleteId !== user.id"
-            type="button"
-            class="users-page__icon users-page__icon--danger"
-            title="Delete user"
-            @click="deleteId = user.id"
-          >
-            <Trash2 :size="15" />
-          </button>
-          <button
-            v-else
-            type="button"
-            class="users-page__confirm"
-            @click="removeUser(user.id)"
-          >
-            Delete
-          </button>
+          <template v-if="user.login === 'demo'">
+            <label class="users-page__dt" :class="{ 'users-page__dt--loading': demoLoading }">
+              <input
+                type="checkbox"
+                class="users-page__dt-input"
+                role="switch"
+                :checked="user.demo"
+                :disabled="demoLoading"
+                :aria-checked="String(user.demo)"
+                @change="toggleDemo(!user.demo)"
+              >
+              <span class="users-page__dt-track" />
+              <span class="users-page__dt-label">{{ user.demo ? 'Demo on' : 'Demo off' }}</span>
+            </label>
+          </template>
+          <template v-else>
+            <button type="button" class="users-page__icon" title="Edit user" @click="openEdit(user)">
+              <Edit3 :size="15" />
+            </button>
+            <button
+              v-if="deleteId !== user.id"
+              type="button"
+              class="users-page__icon users-page__icon--danger"
+              title="Delete user"
+              @click="deleteId = user.id"
+            >
+              <Trash2 :size="15" />
+            </button>
+            <button
+              v-else
+              type="button"
+              class="users-page__confirm"
+              @click="removeUser(user.id)"
+            >
+              Delete
+            </button>
+          </template>
         </span>
       </div>
     </div>
@@ -425,6 +456,65 @@ onMounted(() => {
     color: var(--red-400);
     margin: 0;
   }
+}
+
+// Demo toggle
+.users-page__dt {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  user-select: none;
+
+  &--loading { opacity: 0.5; pointer-events: none; }
+}
+
+.users-page__dt-input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+
+  &:focus-visible + .users-page__dt-track {
+    outline: 2px solid var(--emerald-500);
+    outline-offset: 2px;
+  }
+}
+
+.users-page__dt-track {
+  position: relative;
+  display: inline-block;
+  width: 32px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--color-track);
+  transition: background-color $transition-fast;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--color-primary-foreground);
+    box-shadow: var(--shadow-sm);
+    transition: transform $transition-fast;
+  }
+}
+
+.users-page__dt-input:checked + .users-page__dt-track {
+  background: linear-gradient(135deg, var(--brand-from), var(--brand-to));
+
+  &::after { transform: translateX(14px); }
+}
+
+.users-page__dt-label {
+  color: var(--color-subtle-foreground);
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 64px;
 }
 
 .user-modal {

@@ -111,6 +111,7 @@ export type ManagedUser = {
   login: string
   createdAt: string
   updatedAt: string
+  demo: boolean
 }
 
 export type UserInput = {
