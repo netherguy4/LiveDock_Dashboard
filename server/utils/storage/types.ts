@@ -2,6 +2,7 @@ export type StoredUser = {
   id: string
   login: string
   passwordHash: string
+  isDemo: boolean
   createdAt: string
   updatedAt: string
 }

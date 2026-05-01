@@ -6,5 +6,6 @@ export function publicUser(user: StoredUser) {
     login: user.login,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
+    demo: user.isDemo,
   }
 }
