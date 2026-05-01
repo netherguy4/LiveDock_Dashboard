@@ -281,7 +281,7 @@ onMounted(() => {
 
   &__row {
     display: grid;
-    grid-template-columns: minmax(160px, 1.2fr) minmax(150px, 1fr) minmax(150px, 1fr) auto;
+    grid-template-columns: minmax(160px, 1.2fr) minmax(150px, 1fr) minmax(150px, 1fr) 104px;
     align-items: center;
     gap: var(--space-4);
     min-height: 52px;
@@ -326,16 +326,15 @@ onMounted(() => {
 
   &__login,
   &__actions {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: var(--space-2);
-    min-width: 0;
-    overflow: hidden;
   }
 
   &__login {
     color: var(--color-foreground);
     font-weight: 700;
+    min-width: 0;
 
     @include until($bp-md) {
       grid-column: 1;
@@ -344,7 +343,6 @@ onMounted(() => {
   }
 
   &__login-text {
-    flex: 1;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -367,10 +365,6 @@ onMounted(() => {
   }
 
   &__meta {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-
     @include until($bp-md) {
       display: grid;
       grid-template-columns: 64px minmax(0, 1fr);
