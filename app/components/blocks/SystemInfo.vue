@@ -21,6 +21,11 @@ const serverBootMs = ref(0)
 const downtimeAt = ref<number | null>(null)
 let timer: ReturnType<typeof setInterval> | null = null
 
+watch(() => hosts.activeId, () => {
+  serverBootMs.value = 0
+  downtimeAt.value = null
+})
+
 watch(() => host.value?.uptime_seconds, (v) => {
   if (v == null) {
     if (serverBootMs.value > 0 && downtimeAt.value == null) {
