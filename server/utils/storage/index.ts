@@ -117,5 +117,9 @@ export function createCachedStorage(inner: AppStorage, ttlMs: number): AppStorag
       if (deleted) invalidateHosts(userId)
       return deleted
     },
+
+    setDemoFlag(id, value) {
+      return inner.setDemoFlag(id, value)
+    },
   }
 }

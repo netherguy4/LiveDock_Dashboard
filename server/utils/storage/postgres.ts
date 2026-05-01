@@ -90,6 +90,12 @@ export function createPostgresStorage(connectionString: string): AppStorage {
   }
 
   return {
+    async setDemoFlag(id: string, value: boolean) {
+      await ensureSchema()
+      const result = await sql`UPDATE users SET is_demo = ${value}, updated_at = NOW() WHERE id = ${id}`
+      return result.count > 0
+    },
+
     async close() {
       await sql.end()
     },

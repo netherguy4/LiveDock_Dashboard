@@ -182,5 +182,10 @@ export function createSqliteStorage(dbPath: string): AppStorage {
     async deleteHost(userId: string, id: string) {
       return db.prepare('DELETE FROM hosts WHERE user_id = ? AND id = ?').run(userId, id).changes > 0
     },
+
+    async setDemoFlag(id: string, value: boolean) {
+      return db.prepare('UPDATE users SET is_demo = ?, updated_at = ? WHERE id = ?')
+        .run(value ? 1 : 0, new Date().toISOString(), id).changes > 0
+    },
   }
 }

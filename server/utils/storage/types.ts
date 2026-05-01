@@ -46,5 +46,6 @@ export type AppStorage = {
   createHost(userId: string, input: CreateHostInput): Promise<StoredHost>
   updateHost(userId: string, id: string, input: UpdateHostInput): Promise<StoredHost | null>
   deleteHost(userId: string, id: string): Promise<boolean>
+  setDemoFlag(id: string, value: boolean): Promise<boolean>
   close?(): void | Promise<void>
 }
