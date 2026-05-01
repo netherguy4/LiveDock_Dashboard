@@ -1,3 +1,5 @@
+import { useAuthStore } from '~/stores/auth.store'
+
 // API types shared across adapters and stores.
 // Wire format mirrors what the Go backend emits — DO NOT change here without
 // matching backend/internal/{collector,docker,api}.
@@ -119,6 +121,8 @@ export type UserInput = {
 function hostHeaders(): Record<string, string> {
   if (typeof window === 'undefined') return {}
   try {
+    const auth = useAuthStore()
+    if (auth.demo) return { 'X-Mon-Host-Id': 'demo' }
     const store = useHostsStore()
     const h = store.active
     if (!h) return {}
