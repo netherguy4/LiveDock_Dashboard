@@ -23,6 +23,7 @@ export const useAuthStore = defineStore('auth', {
     user: '' as string,
     kind: null as 'admin' | 'user' | null,
     userId: null as string | null,
+    demo: false,
     checking: false,
     error: null as string | null,
   }),
@@ -36,17 +37,20 @@ export const useAuthStore = defineStore('auth', {
           user: string
           kind: 'admin' | 'user' | null
           userId: string | null
+          demo: boolean
         }>('/api/me')
         this.isAuthed = res.authed
         this.user = res.user
         this.kind = res.kind
         this.userId = res.userId
+        this.demo = res.demo
         this.error = null
       } catch {
         this.isAuthed = false
         this.user = ''
         this.kind = null
         this.userId = null
+        this.demo = false
       } finally {
         this.checking = false
       }
@@ -63,6 +67,7 @@ export const useAuthStore = defineStore('auth', {
         this.user = ''
         this.kind = null
         this.userId = null
+        this.demo = false
         this.error = e instanceof Error ? e.message : String(e)
         throw e
       }
@@ -76,6 +81,7 @@ export const useAuthStore = defineStore('auth', {
         this.user = ''
         this.kind = null
         this.userId = null
+        this.demo = false
       }
     },
   },
