@@ -30,20 +30,37 @@ const LOG_LINES = [
 ]
 
 const containerOverrides: Record<string, { state: string; status: string }> = {}
+const containerTimers: Record<string, ReturnType<typeof setTimeout>> = {}
+
+const ACTION_DELAY_MS = 1500
+const TRANSITION_DELAY_MS = 3000
+
+const TRANSITION_STATUS: Record<string, string> = {
+  start: 'Starting...',
+  stop: 'Stopping...',
+  restart: 'Restarting...',
+}
+
+const FINAL_STATE: Record<string, { state: string; status: string }> = {
+  start: { state: 'running', status: 'Up 2 seconds' },
+  stop: { state: 'exited', status: 'Exited (0) 2 seconds ago' },
+  restart: { state: 'running', status: 'Up 3 seconds (restarted)' },
+}
 
 function applyContainerAction(id: string, action: string) {
   if (!CONTAINERS.some((c) => c.id === id)) return
-  switch (action) {
-    case 'start':
-      containerOverrides[id] = { state: 'running', status: 'Up 2 seconds' }
-      break
-    case 'stop':
-      containerOverrides[id] = { state: 'exited', status: 'Exited (0) 2 seconds ago' }
-      break
-    case 'restart':
-      containerOverrides[id] = { state: 'running', status: 'Up 3 seconds (restarted)' }
-      break
+
+  if (containerTimers[id]) {
+    clearTimeout(containerTimers[id])
   }
+
+  containerOverrides[id] = { state: 'restarting', status: TRANSITION_STATUS[action] ?? 'Transitioning...' }
+
+  containerTimers[id] = setTimeout(() => {
+    const final = FINAL_STATE[action]
+    if (final) containerOverrides[id] = final
+    Reflect.deleteProperty(containerTimers, id)
+  }, TRANSITION_DELAY_MS)
 }
 
 function getContainerStatus(now: number, id: string, index: number): { state: string; status: string } {
@@ -202,6 +219,8 @@ export function generateDemoData(path: string, query: Record<string, unknown>, m
       const actionBody = body as { action?: string } | undefined
       if (actionBody?.action) {
         applyContainerAction(containerActionMatch[1], actionBody.action)
+        return new Promise<void>((resolve) => setTimeout(resolve, ACTION_DELAY_MS))
+          .then(() => ({ ok: true }))
       }
     }
     return { ok: true }
