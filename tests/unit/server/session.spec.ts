@@ -11,7 +11,7 @@ describe('session utils', () => {
   it('round-trips a user subject', () => {
     const token = signSession({ kind: 'user', userId: 'u1', login: 'alice' }, 60, 'secret')
 
-    expect(verifySession(token, 'secret')).toEqual({ kind: 'user', userId: 'u1', login: 'alice' })
+    expect(verifySession(token, 'secret')).toEqual({ kind: 'user', userId: 'u1', login: 'alice', demo: false })
   })
 
   it('rejects malformed tokens', () => {

@@ -78,6 +78,7 @@ export function createSqliteStorage(dbPath: string): AppStorage {
       id TEXT PRIMARY KEY,
       login TEXT NOT NULL UNIQUE,
       password_hash TEXT NOT NULL,
+      is_demo INTEGER DEFAULT 0,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
