@@ -30,7 +30,9 @@ async function logout() {
 <template>
   <header class="app-header">
     <div class="app-header__left">
-      <Logo layout="full" size="md" :on-dark="isDark" />
+      <NuxtLink :to="ROUTES.HOME" class="app-header__logo-link">
+        <Logo layout="full" size="md" :on-dark="isDark" />
+      </NuxtLink>
       <NavLinks />
     </div>
 
@@ -64,6 +66,12 @@ async function logout() {
     min-width: 0;
   }
   &__left { gap: var(--space-3); @include from($bp-sm) { gap: var(--space-6); } }
+
+  &__logo-link {
+    text-decoration: none;
+    color: inherit;
+    line-height: 0;
+  }
 
   &__logout {
     display: inline-flex;
