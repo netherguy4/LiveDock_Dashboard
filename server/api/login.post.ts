@@ -59,7 +59,17 @@ export default defineEventHandler(async (event) => {
     return { error: 'invalid credentials' }
   }
 
-  const token = signSession({ kind: 'user', userId: user.id, login: user.login }, SESSION_TTL_SECONDS, cfg.sessionSecret)
+  // Demo user disabled — reject login (only for the demo account, not regular users)
+  if (login === 'demo' && !user.isDemo) {
+    setResponseStatus(event, 403)
+    return { error: 'Demo account is disabled' }
+  }
+
+  const token = signSession(
+    { kind: 'user', userId: user.id, login: user.login, demo: user.isDemo },
+    SESSION_TTL_SECONDS,
+    cfg.sessionSecret,
+  )
   setCookie(event, SESSION_COOKIE, token, cookieOptions)
   return { ok: true, user: user.login, kind: 'user', userId: user.id }
 })
