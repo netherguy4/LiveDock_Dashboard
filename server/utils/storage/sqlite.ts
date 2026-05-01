@@ -16,6 +16,7 @@ type UserRow = {
   id: string
   login: string
   password_hash: string
+  is_demo: number
   created_at: string
   updated_at: string
 }
@@ -39,6 +40,7 @@ function mapUser(row: UserRow): StoredUser {
     id: row.id,
     login: row.login,
     passwordHash: row.password_hash,
+    isDemo: row.is_demo === 1,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
@@ -64,6 +66,13 @@ export function createSqliteStorage(dbPath: string): AppStorage {
   mkdirSync(dirname(dbPath), { recursive: true })
   const db = new Database(dbPath)
   db.pragma('foreign_keys = ON')
+
+  try {
+    db.exec(`ALTER TABLE users ADD COLUMN is_demo INTEGER DEFAULT 0`)
+  } catch {
+    // Column already exists — ignore
+  }
+
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
@@ -100,9 +109,9 @@ export function createSqliteStorage(dbPath: string): AppStorage {
       const id = randomUUID()
       try {
         db.prepare(`
-          INSERT INTO users (id, login, password_hash, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?)
-        `).run(id, input.login, input.passwordHash, now, now)
+          INSERT INTO users (id, login, password_hash, is_demo, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?)
+        `).run(id, input.login, input.passwordHash, 0, now, now)
       } catch (e: unknown) {
         if (isUniqueLoginError(e)) throw new Error('login already exists')
         throw e
