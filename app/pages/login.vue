@@ -43,7 +43,7 @@ const onSubmit = handleSubmit(async (values) => {
     const redirect = String(route.query.redirect ?? ROUTES.HOME)
     router.replace(redirect.startsWith('/') ? redirect : ROUTES.HOME)
   } catch {
-    submitError.value = 'Неверный логин или пароль'
+    submitError.value = 'Invalid username or password'
   } finally {
     submitting.value = false
   }
@@ -99,13 +99,13 @@ function onMouseMove(e: MouseEvent) {
         <span class="login-card__ring" aria-hidden="true" />
 
         <div class="login-card__head">
-          <h1 class="login-card__title">Авторизация</h1>
-          <p class="login-card__sub">Введите учётные данные администратора</p>
+          <h1 class="login-card__title">Sign in</h1>
+          <p class="login-card__sub">Enter administrator credentials</p>
         </div>
 
         <div class="login-card__fields">
           <div class="login-card__field">
-            <label class="login-card__label" for="login-input">Логин</label>
+            <label class="login-card__label" for="login-input">Username</label>
             <div data-glow-wrap class="login-card__wrap">
               <span class="login-card__glow" aria-hidden="true" />
               <User :size="16" class="login-card__icon" />
@@ -122,7 +122,7 @@ function onMouseMove(e: MouseEvent) {
           </div>
 
           <div class="login-card__field">
-            <label class="login-card__label" for="pwd-input">Пароль</label>
+            <label class="login-card__label" for="pwd-input">Password</label>
             <div data-glow-wrap class="login-card__wrap">
               <span class="login-card__glow" aria-hidden="true" />
               <Lock :size="16" class="login-card__icon" />
@@ -137,7 +137,7 @@ function onMouseMove(e: MouseEvent) {
               <button
                 type="button"
                 class="login-card__toggle"
-                :aria-label="showPwd ? 'Скрыть пароль' : 'Показать пароль'"
+                :aria-label="showPwd ? 'Hide password' : 'Show password'"
                 @click="showPwd = !showPwd"
               >
                 <component :is="showPwd ? EyeOff : Eye" :size="16" />
@@ -158,14 +158,14 @@ function onMouseMove(e: MouseEvent) {
           >
             <span v-if="submitting" class="login-card__spinner" />
             <template v-else>
-              Войти
+              Sign in
               <ArrowRight :size="16" />
             </template>
           </button>
         </div>
       </form>
 
-      <div class="login-screen__caption">LiveDock · защищённая зона</div>
+      <div class="login-screen__caption">LiveDock · secure area</div>
     </div>
   </div>
 </template>

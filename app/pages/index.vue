@@ -137,13 +137,13 @@ useHead({ title: 'LiveDock · Dashboard' })
         <div class="dashboard__empty-icon">
           <Users :size="48" />
         </div>
-        <h2 class="dashboard__empty-title">Управление пользователями</h2>
+        <h2 class="dashboard__empty-title">User management</h2>
         <p class="dashboard__empty-desc">
-          Создайте пользователя, чтобы выдать ему отдельный список серверов
+          Create a user to give them a separate server list
         </p>
         <NuxtLink class="dashboard__empty-action" to="/users">
           <Users :size="18" />
-          Открыть пользователей
+          Open users
         </NuxtLink>
       </div>
     </template>
@@ -152,16 +152,16 @@ useHead({ title: 'LiveDock · Dashboard' })
         <div class="dashboard__empty-icon">
           <Server :size="48" />
         </div>
-        <h2 class="dashboard__empty-title">Добавить первый сервер</h2>
+        <h2 class="dashboard__empty-title">Add your first server</h2>
         <p class="dashboard__empty-desc">
-          Подключите Docker-сервер для начала мониторинга
+          Connect a Docker server to start monitoring
         </p>
         <button
           class="dashboard__empty-action"
           @click="hosts.setAddDialogOpen(true)"
         >
           <Plus :size="18" />
-          Добавить сервер
+          Add server
         </button>
       </div>
     </template>
@@ -173,13 +173,13 @@ useHead({ title: 'LiveDock · Dashboard' })
         <div class="dashboard__offline-main">
           <h2 class="dashboard__offline-title">Host is unreachable</h2>
           <p class="dashboard__offline-desc">
-            Не удалось получить метрики с хоста {{ hosts.active?.name ?? '—' }}.
-            Проверьте доступность API и токен подключения.
+            Could not load metrics from host {{ hosts.active?.name ?? '—' }}.
+            Check API availability and the connection token.
           </p>
           <p class="dashboard__offline-meta">{{ hosts.active?.url ?? '—' }}</p>
         </div>
         <button class="dashboard__offline-action" type="button" @click="retryActiveHost">
-          Повторить подключение
+          Retry connection
         </button>
       </div>
     </template>

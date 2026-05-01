@@ -37,8 +37,8 @@ const s = computed(() => sizeMap[props.size]);
 const isAnimating = ref(false);
 
 /**
- * Запускает анимацию иконки при наведении.
- * Если анимация уже проигрывается, повторный запуск игнорируется.
+ * Starts the icon animation on hover.
+ * If the animation is already running, the repeated trigger is ignored.
  */
 const handleMouseEnter = () => {
   if (isAnimating.value) return;
@@ -46,7 +46,7 @@ const handleMouseEnter = () => {
 };
 
 /**
- * Сбрасывает состояние анимации после завершения CSS-анимации.
+ * Resets the animation state after the CSS animation finishes.
  */
 const handleAnimationEnd = () => {
   isAnimating.value = false;
@@ -152,11 +152,11 @@ const handleAnimationEnd = () => {
   &__path {
     stroke-dasharray: 46;
     stroke-dashoffset: 0;
-    // Плавное возвращение к 0, если анимация была прервана (напр. в Safari)
+     // Smoothly return to 0 if the animation was interrupted (for example, in Safari)
     transition: stroke-dashoffset 0.3s ease;
 
     &--animating {
-      // Анимация рисует путь (от 46 до 0)
+      // Animate the path being drawn from 46 to 0
       animation: logo-path-draw 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     }
   }
@@ -232,12 +232,12 @@ const handleAnimationEnd = () => {
     align-self: center;
   }
 
-  // При нахождении на темном фоне корректируем цвета текста
+  // Adjust text colors when the logo sits on a dark background
   &--on-dark {
     .logo__sub {
       color: #64748b;
     }
-    // Если нужно инвертировать mono-light на темном фоне
+    // Invert mono-light when needed on a dark background
     .logo__mark--mono-light {
       background: rgba(255, 255, 255, 0.1);
       border-color: rgba(255, 255, 255, 0.2);

@@ -46,7 +46,7 @@ const onClick = (event: MouseEvent) => {
   <button
     type="button"
     class="theme-toggle"
-    :aria-label="isDark ? 'Светлая тема' : 'Тёмная тема'"
+    :aria-label="isDark ? 'Light theme' : 'Dark theme'"
     @click="onClick"
   >
     <Transition name="icon-swap" mode="out-in">
