@@ -6,6 +6,8 @@ export type LocalHost = Host & {
   status?: 'online' | 'offline' | 'degraded' | 'checking'
 }
 
+export const HOST_STATUS_PROBE_TIMEOUT_MS = 8000
+
 export const useHostsStore = defineStore('hosts', {
   state: () => ({
     items: [] as LocalHost[],
@@ -125,10 +127,20 @@ export const useHostsStore = defineStore('hosts', {
       this.statusRefreshing = true
       const ids = this.items.map((host) => host.id)
       const api = useApi()
+      const probeWithTimeout = (id: string) =>
+        new Promise<void>((resolve, reject) => {
+          const timer = setTimeout(() => reject(new Error('status probe timeout')), HOST_STATUS_PROBE_TIMEOUT_MS)
+          api.snapshotForHost(id)
+            .then(() => resolve())
+            .catch((e: unknown) => reject(e))
+            .finally(() => clearTimeout(timer))
+        })
       try {
         await Promise.allSettled(ids.map(async (id) => {
+          const host = this.items.find((item) => item.id === id)
+          if (!host?.status) this.setStatus(id, 'checking')
           try {
-            await api.snapshotForHost(id)
+            await probeWithTimeout(id)
             this.setStatus(id, 'online')
           } catch {
             this.setStatus(id, 'offline')
