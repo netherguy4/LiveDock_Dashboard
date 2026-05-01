@@ -13,14 +13,17 @@ const dialogOpen = ref(false)
 const deleteId = ref('')
 const demoLoading = ref(false)
 
-async function toggleDemo(enabled: boolean) {
+async function toggleDemo(user: ManagedUser, enabled: boolean) {
+  const previous = user.demo
+  user.demo = enabled
   demoLoading.value = true
   try {
     await $fetch('/api/admin/demo/toggle', {
       method: 'PATCH',
       body: { enabled },
     })
-    await users.load()
+  } catch {
+    user.demo = previous
   } finally {
     demoLoading.value = false
   }
@@ -140,7 +143,7 @@ onMounted(() => {
                 :checked="user.demo"
                 :disabled="demoLoading"
                 :aria-checked="String(user.demo)"
-                @change="toggleDemo(!user.demo)"
+                @change="toggleDemo(user, !user.demo)"
               >
               <span class="users-page__dt-track" />
               <span class="users-page__dt-label">{{ user.demo ? 'Active' : 'Disabled' }}</span>
