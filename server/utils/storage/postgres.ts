@@ -14,6 +14,7 @@ type UserRow = {
   id: string
   login: string
   password_hash: string
+  is_demo: boolean
   created_at: string
   updated_at: string
 }
@@ -33,6 +34,7 @@ function mapUser(row: UserRow): StoredUser {
     id: row.id,
     login: row.login,
     passwordHash: row.password_hash,
+    isDemo: row.is_demo,
     createdAt: new Date(row.created_at).toISOString(),
     updatedAt: new Date(row.updated_at).toISOString(),
   }
@@ -68,6 +70,9 @@ export function createPostgresStorage(connectionString: string): AppStorage {
           created_at TIMESTAMPTZ NOT NULL,
           updated_at TIMESTAMPTZ NOT NULL
         )
+      `
+      await sql`
+        ALTER TABLE users ADD COLUMN IF NOT EXISTS is_demo BOOLEAN DEFAULT FALSE
       `
       await sql`
         CREATE TABLE IF NOT EXISTS hosts (
@@ -106,8 +111,8 @@ export function createPostgresStorage(connectionString: string): AppStorage {
       const id = randomUUID()
       try {
         const [row] = await sql<UserRow[]>`
-          INSERT INTO users (id, login, password_hash, created_at, updated_at)
-          VALUES (${id}, ${input.login}, ${input.passwordHash}, NOW(), NOW())
+          INSERT INTO users (id, login, password_hash, is_demo, created_at, updated_at)
+          VALUES (${id}, ${input.login}, ${input.passwordHash}, FALSE, NOW(), NOW())
           RETURNING *
         `
         return mapUser(row)
