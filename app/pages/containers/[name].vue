@@ -23,6 +23,7 @@ useHead(() => ({ title: `LiveDock · ${name.value}` }))
 </script>
 
 <template>
+  <div>
   <ClientOnly>
     <div class="cont-page" :aria-busy="containers.loading ? true : undefined">
       <ContainerDetail :name="name" />
@@ -85,6 +86,7 @@ useHead(() => ({ title: `LiveDock · ${name.value}` }))
       </div>
     </template>
   </ClientOnly>
+  </div>
 </template>
 
 <style lang="scss" scoped>

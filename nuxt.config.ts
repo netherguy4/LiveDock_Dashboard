@@ -12,7 +12,12 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   ssr: true,
 
-  modules: ["@pinia/nuxt", "pinia-plugin-persistedstate/nuxt", "@vueuse/nuxt", "@nuxt/eslint"],
+  modules: [
+    "@pinia/nuxt",
+    "pinia-plugin-persistedstate/nuxt",
+    "@vueuse/nuxt",
+    "@nuxt/eslint",
+  ],
 
   components: [{ path: "~/components", pathPrefix: false }],
 
@@ -25,19 +30,34 @@ export default defineNuxtConfig({
     public: {},
   },
 
-   app: {
-     viewTransition: true,
-     head: {
-       title: "Monitoring",
-       link: [
-         { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
-         { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
-         { rel: "icon", type: "image/png", sizes: "96x96", href: "/favicon-96x96.png" },
-         { rel: "icon", type: "image/png", sizes: "192x192", href: "/web-app-manifest-192x192.png" },
-         { rel: "icon", type: "image/png", sizes: "512x512", href: "/web-app-manifest-512x512.png" },
-         { rel: "shortcut icon", href: "/favicon.ico" },
-       ],
-       script: [
+  app: {
+    viewTransition: false,
+    head: {
+      title: "Monitoring",
+      link: [
+        { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+        { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+        {
+          rel: "icon",
+          type: "image/png",
+          sizes: "96x96",
+          href: "/favicon-96x96.png",
+        },
+        {
+          rel: "icon",
+          type: "image/png",
+          sizes: "192x192",
+          href: "/web-app-manifest-192x192.png",
+        },
+        {
+          rel: "icon",
+          type: "image/png",
+          sizes: "512x512",
+          href: "/web-app-manifest-512x512.png",
+        },
+        { rel: "shortcut icon", href: "/favicon.ico" },
+      ],
+      script: [
         {
           // Must run before first paint — reads localStorage and sets the
           // theme-dark class on <html> so CSS variables apply immediately.
