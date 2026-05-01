@@ -29,7 +29,25 @@ const LOG_LINES = [
   { level: 'info', msg: 'TLS certificate renewed, restarting listener' },
 ]
 
-function getContainerStatus(now: number, index: number): { state: string; status: string } {
+const containerOverrides: Record<string, { state: string; status: string }> = {}
+
+function applyContainerAction(id: string, action: string) {
+  if (!CONTAINERS.some((c) => c.id === id)) return
+  switch (action) {
+    case 'start':
+      containerOverrides[id] = { state: 'running', status: 'Up 2 seconds' }
+      break
+    case 'stop':
+      containerOverrides[id] = { state: 'exited', status: 'Exited (0) 2 seconds ago' }
+      break
+    case 'restart':
+      containerOverrides[id] = { state: 'running', status: 'Up 3 seconds (restarted)' }
+      break
+  }
+}
+
+function getContainerStatus(now: number, id: string, index: number): { state: string; status: string } {
+  if (containerOverrides[id]) return containerOverrides[id]
   const cycle = Math.floor(now / 120_000) % CONTAINERS.length
   if (index === cycle) return { state: 'exited', status: 'Exited (0) 5 seconds ago' }
   return { state: 'running', status: 'Up 3 hours' }
@@ -68,7 +86,7 @@ function generateSnapshot(now: number) {
 
 function generateContainerRows(now: number) {
   return CONTAINERS.map((c, i) => {
-    const { state, status } = getContainerStatus(now, i)
+    const { state, status } = getContainerStatus(now, c.id, i)
     const cpu = mockCpu(now + i * 5000) / 5
     const mem = mockMemory(now + i * 3000)
     return {
@@ -160,7 +178,7 @@ function generateRequests(now: number, hours: number) {
   return mockRequests(now, hours)
 }
 
-export function generateDemoData(path: string, query: Record<string, unknown>): unknown {
+export function generateDemoData(path: string, query: Record<string, unknown>, method?: string, body?: unknown): unknown {
   const now = Date.now()
 
   if (path === 'snapshot') return generateSnapshot(now)
@@ -178,7 +196,14 @@ export function generateDemoData(path: string, query: Record<string, unknown>): 
     return generateLogs(containerLogsMatch[1], now, Number(query.tail) || 200)
   }
 
-  if (path.match(/^containers\/[^/]+\/action$/)) {
+  const containerActionMatch = path.match(/^containers\/([^/]+)\/action$/)
+  if (containerActionMatch) {
+    if (method === 'POST') {
+      const actionBody = body as { action?: string } | undefined
+      if (actionBody?.action) {
+        applyContainerAction(containerActionMatch[1], actionBody.action)
+      }
+    }
     return { ok: true }
   }
 

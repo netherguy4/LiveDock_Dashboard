@@ -121,10 +121,12 @@ onMounted(() => {
         v-else
         :key="user.id"
         class="users-page__row"
+        :class="{ 'users-page__row--demo': user.login === 'demo' }"
       >
         <span class="users-page__login">
           <UserRound :size="16" />
           <span class="users-page__login-text">{{ user.login }}</span>
+          <span v-if="user.login === 'demo'" class="users-page__demo-badge">Demo</span>
         </span>
         <span class="users-page__meta" data-label="Created">{{ new Date(user.createdAt).toLocaleString() }}</span>
         <span class="users-page__meta" data-label="Updated">{{ new Date(user.updatedAt).toLocaleString() }}</span>
@@ -141,7 +143,7 @@ onMounted(() => {
                 @change="toggleDemo(!user.demo)"
               >
               <span class="users-page__dt-track" />
-              <span class="users-page__dt-label">{{ user.demo ? 'Demo on' : 'Demo off' }}</span>
+              <span class="users-page__dt-label">{{ user.demo ? 'Active' : 'Disabled' }}</span>
             </label>
           </template>
           <template v-else>
@@ -301,6 +303,10 @@ onMounted(() => {
       pointer-events: none;
     }
 
+    &--demo {
+      background: var(--color-accent-bg);
+    }
+
     @include until($bp-md) {
       grid-template-columns: 1fr auto;
       gap: var(--space-2) var(--space-3);
@@ -338,6 +344,21 @@ onMounted(() => {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  &__demo-badge {
+    display: inline-flex;
+    align-items: center;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: var(--radius-md);
+    background: rgb(16 185 129 / 0.10);
+    color: var(--emerald-600);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    flex-shrink: 0;
   }
 
   &__meta {
@@ -514,7 +535,7 @@ onMounted(() => {
   color: var(--color-subtle-foreground);
   font-size: 12px;
   font-weight: 600;
-  min-width: 64px;
+  min-width: 56px;
 }
 
 .user-modal {

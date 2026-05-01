@@ -10,8 +10,12 @@ export default defineEventHandler(async (event) => {
 
   // Demo user — serve mock data instead of proxying to Go
   if (session.demo) {
+    let demoBody: unknown = undefined
+    if (method !== 'GET' && method !== 'HEAD') {
+      demoBody = await readBody(event).catch(() => undefined)
+    }
     try {
-      return generateDemoData(path, query)
+      return generateDemoData(path, query, method, demoBody)
     } catch (err: unknown) {
       const e = err as { message?: string }
       setResponseStatus(event, 500)
