@@ -326,15 +326,16 @@ onMounted(() => {
 
   &__login,
   &__actions {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: var(--space-2);
+    min-width: 0;
+    overflow: hidden;
   }
 
   &__login {
     color: var(--color-foreground);
     font-weight: 700;
-    min-width: 0;
 
     @include until($bp-md) {
       grid-column: 1;
@@ -343,6 +344,7 @@ onMounted(() => {
   }
 
   &__login-text {
+    flex: 1;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -365,6 +367,10 @@ onMounted(() => {
   }
 
   &__meta {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
     @include until($bp-md) {
       display: grid;
       grid-template-columns: 64px minmax(0, 1fr);
