@@ -58,12 +58,17 @@ function runTick() {
   if (tickN % POLLING.REQUESTS_EVERY === 0) void requests.refresh()
 }
 
+let loadedForUserId: string | null = null
+
 async function loadHostsForUser() {
-  if (hosts.loaded || hosts.loading) return
+  if (hosts.loading) return
+  if (hosts.loaded && loadedForUserId === auth.userId) return
   try {
     await hosts.load()
+    loadedForUserId = auth.userId
   } catch {
     hosts.reset()
+    loadedForUserId = null
   }
 }
 
@@ -73,6 +78,7 @@ if (auth.isAuthed && auth.kind === 'user' && route.path !== '/login') {
 
 if (auth.isAuthed && auth.kind === 'admin') {
   hosts.reset()
+  loadedForUserId = null
 }
 
 watch([() => ui.intervalMs, polling], start, { immediate: false })
@@ -92,7 +98,7 @@ watch(
   ([kind, authed, path]) => {
     if (!authed || path === '/login') return
     if (kind === 'user') void loadHostsForUser()
-    if (kind === 'admin') hosts.reset()
+    if (kind === 'admin') { hosts.reset(); loadedForUserId = null }
   },
   { immediate: true },
 )

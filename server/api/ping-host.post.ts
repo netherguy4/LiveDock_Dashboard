@@ -8,9 +8,11 @@ export default defineEventHandler(async (event) => {
     return { ok: false, error: 'URL is required' }
   }
 
+  let raw = body.url
+  if (!raw.includes('://')) raw = `https://${raw}`
   let baseUrl: string
   try {
-    baseUrl = new URL(body.url).toString().replace(/\/$/, '')
+    baseUrl = new URL(raw).toString().replace(/\/$/, '')
   } catch {
     setResponseStatus(event, 400)
     return { ok: false, error: 'Invalid URL format' }

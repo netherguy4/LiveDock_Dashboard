@@ -82,18 +82,24 @@ function openAddDialog() {
 function openEditDialog(h: LocalHost) {
   draft.id = h.id
   draft.name = h.name
-  draft.url = h.url ?? ''
+  draft.url = (h.url ?? '').replace(/^https:\/\//, '')
   draft.token = ''
   pingError.value = null
   hosts.setAddDialogOpen(true)
 }
 
+function normalizeUrl(url: string): string {
+  const trimmed = url.trim()
+  return trimmed.includes('://') ? trimmed : `https://${trimmed}`
+}
+
 async function submitHost() {
-  if (!draft.name.trim() || !draft.url.trim()) return
+  const url = normalizeUrl(draft.url)
+  if (!draft.name.trim() || !url) return
   validating.value = true
   pingError.value = null
   try {
-    const res = await useApi().pingHost(draft.url.trim(), draft.token.trim() || undefined)
+    const res = await useApi().pingHost(url, draft.token.trim() || undefined)
     if (!res.ok) {
       pingError.value = res.error ?? 'Could not reach host'
       return
@@ -108,13 +114,13 @@ async function submitHost() {
   if (isEditing.value) {
     await hosts.update(draft.id, {
       name: draft.name.trim(),
-      url: draft.url.trim(),
+      url,
       token: draft.token.trim() || undefined,
     })
   } else {
     await hosts.add({
       name: draft.name.trim(),
-      url: draft.url.trim(),
+      url,
       token: draft.token.trim() || undefined,
     })
   }
@@ -272,7 +278,7 @@ watch(() => hosts.addDialogOpen, (v) => {
                   <input
                     v-model="draft.url"
                     autocomplete="off"
-                    placeholder="https://10.0.0.10:2376"
+                    placeholder="hostname or https://10.0.0.10:2376"
                     class="host-modal__input host-modal__input--mono"
                   >
                 </span>

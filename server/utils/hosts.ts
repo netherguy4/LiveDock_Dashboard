@@ -18,10 +18,11 @@ export function publicHost(host: StoredHost) {
 
 export function sanitizeHost(input: HostBody): CreateHostInput {
   const name = (input.name ?? '').trim()
-  const url = (input.url ?? '').trim()
+  let url = (input.url ?? '').trim()
   const token = (input.token ?? '').trim() || undefined
   if (!name) throw createError({ statusCode: 400, statusMessage: 'name required' })
   if (!url) throw createError({ statusCode: 400, statusMessage: 'url required' })
+  if (!url.includes('://')) url = `https://${url}`
   let parsed: URL
   try {
     parsed = new URL(url)
