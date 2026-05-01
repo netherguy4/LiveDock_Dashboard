@@ -4,7 +4,7 @@ const ALGO = 'sha256'
 
 export type SessionSubject =
   | { kind: 'admin'; login: string }
-  | { kind: 'user'; userId: string; login: string }
+  | { kind: 'user'; userId: string; login: string; demo?: boolean }
 
 function encodeSubject(subject: SessionSubject): string {
   return Buffer.from(JSON.stringify(subject), 'utf8').toString('base64url')
@@ -12,12 +12,12 @@ function encodeSubject(subject: SessionSubject): string {
 
 function decodeSubject(value: string): SessionSubject | null {
   try {
-    const parsed = JSON.parse(Buffer.from(value, 'base64url').toString('utf8')) as Partial<SessionSubject>
+    const parsed = JSON.parse(Buffer.from(value, 'base64url').toString('utf8')) as Record<string, unknown>
     if (parsed.kind === 'admin' && typeof parsed.login === 'string') {
       return { kind: 'admin', login: parsed.login }
     }
     if (parsed.kind === 'user' && typeof parsed.userId === 'string' && typeof parsed.login === 'string') {
-      return { kind: 'user', userId: parsed.userId, login: parsed.login }
+      return { kind: 'user', userId: parsed.userId, login: parsed.login, demo: Boolean(parsed.demo) }
     }
     return null
   } catch {
