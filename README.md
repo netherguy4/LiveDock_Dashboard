@@ -2,12 +2,18 @@
 
 LiveDock is a self-hosted monitoring dashboard for servers, containers, and request activity. It is designed for people who want a fast, calm view of what their system is doing without digging through dashboards or logs.
 
-This repository currently carries the `Homepage` name, but the product name is LiveDock. The dashboard pairs with the `monitoring-api` service that collects and serves the data.
+The dashboard pairs with the LiveDock API service that collects and serves the data.
 
 [![Vue](https://img.shields.io/badge/Vue-3-4FC08D?logo=vue.js&logoColor=white)](https://vuejs.org/)
 [![Nuxt](https://img.shields.io/badge/Nuxt-4-00DC82?logo=nuxt&logoColor=white)](https://nuxt.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+
+## Demo
+
+Open the live demo: [homepage-opal-pi.vercel.app](https://homepage-opal-pi.vercel.app)
+
+The demo is useful for checking the dashboard flow before wiring LiveDock to your own host and API service.
 
 ## What it shows
 
@@ -66,7 +72,7 @@ Copy `.env.example` and fill in the values for your deployment.
 
 ## Related service
 
-- [`monitoring-api`](https://github.com/netherg-io/monitoring-api) - backend collector and API for snapshots, history, logs, and control
+- [`LiveDock_API`](https://github.com/netherg-io/LiveDock_API) - backend collector and API for snapshots, history, logs, and control
 
 ## License
 
