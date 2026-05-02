@@ -1,19 +1,48 @@
-# LiveDock Dashboard
+<p align="center">
+  <img src="./public/web-app-manifest-192x192.png" alt="LiveDock logo" width="88" height="88">
+</p>
+
+<h1 align="center">LiveDock Dashboard</h1>
+
+<p align="center">
+  Self-hosted server and container monitoring with a calm, signal-first interface.
+</p>
+
+<p align="center">
+  <a href="https://homepage-opal-pi.vercel.app"><strong>Open the live demo</strong></a>
+  ·
+  <code>demo</code> / <code>demo</code>
+</p>
+
+<p align="center">
+  <a href="https://vuejs.org/"><img alt="Vue 3" src="https://img.shields.io/badge/Vue-3-4FC08D?logo=vue.js&logoColor=white"></a>
+  <a href="https://nuxt.com/"><img alt="Nuxt 4" src="https://img.shields.io/badge/Nuxt-4-00DC82?logo=nuxt&logoColor=white"></a>
+  <a href="https://www.typescriptlang.org/"><img alt="TypeScript 6" src="https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white"></a>
+  <a href="./LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/License-MIT-blue.svg"></a>
+</p>
+
+![LiveDock dashboard](./.github/assets/livedock-dashboard.png)
 
 LiveDock is a self-hosted monitoring dashboard for servers, containers, and request activity. It is designed for people who want a fast, calm view of what their system is doing without digging through dashboards or logs.
 
 The dashboard pairs with the LiveDock API service that collects and serves the data.
 
-[![Vue](https://img.shields.io/badge/Vue-3-4FC08D?logo=vue.js&logoColor=white)](https://vuejs.org/)
-[![Nuxt](https://img.shields.io/badge/Nuxt-4-00DC82?logo=nuxt&logoColor=white)](https://nuxt.com/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
-
 ## Demo
 
 Open the live demo: [homepage-opal-pi.vercel.app](https://homepage-opal-pi.vercel.app)
 
-The demo is useful for checking the dashboard flow before wiring LiveDock to your own host and API service.
+Demo credentials are always:
+
+- Username: `demo`
+- Password: `demo`
+
+Use the demo to inspect the dashboard flow before wiring LiveDock to your own host and API service.
+
+## Screenshots
+
+| Sign in | Mobile dashboard |
+| --- | --- |
+| ![LiveDock sign in](./.github/assets/livedock-login.png) | ![LiveDock mobile dashboard](./.github/assets/livedock-mobile.png) |
 
 ## What it shows
 
